@@ -175,6 +175,24 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FileSearch\FileSearch\FileSearch.csproj">
+      <Project>{0929ec2a-efef-4d27-88a3-cbc1bce0da4b}</Project>
+      <Name>FileSearch</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MobileLogs\MobileLogs\MobileLogs.csproj">
+      <Project>{e8dbe6e4-62dc-432a-bd20-e89b595b4ed8}</Project>
+      <Name>MobileLogs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MobileMap\MobileMap\MobileMap.csproj">
+      <Project>{d114f61a-32ca-465b-a6ae-a0cde321ed3b}</Project>
+      <Name>MobileMap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RingBuffer\RingBuffer\RingBuffer.csproj">
+      <Project>{1b984d6c-ad49-40cd-afcc-b96c4ad8f489}</Project>
+      <Name>RingBuffer</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

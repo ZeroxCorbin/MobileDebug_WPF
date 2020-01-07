@@ -5,6 +5,14 @@ VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobileDebug_WPF", "MobileDebug_WPF\MobileDebug_WPF.csproj", "{827EC673-04CB-4A41-AD77-9BC1940FEA81}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSearch", "..\FileSearch\FileSearch\FileSearch.csproj", "{0929EC2A-EFEF-4D27-88A3-CBC1BCE0DA4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RingBuffer", "..\RingBuffer\RingBuffer\RingBuffer.csproj", "{1B984D6C-AD49-40CD-AFCC-B96C4AD8F489}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobileMap", "..\MobileMap\MobileMap\MobileMap.csproj", "{D114F61A-32CA-465B-A6AE-A0CDE321ED3B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobileLogs", "..\MobileLogs\MobileLogs\MobileLogs.csproj", "{E8DBE6E4-62DC-432A-BD20-E89B595B4ED8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +23,22 @@ Global
 		{827EC673-04CB-4A41-AD77-9BC1940FEA81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{827EC673-04CB-4A41-AD77-9BC1940FEA81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{827EC673-04CB-4A41-AD77-9BC1940FEA81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0929EC2A-EFEF-4D27-88A3-CBC1BCE0DA4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0929EC2A-EFEF-4D27-88A3-CBC1BCE0DA4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0929EC2A-EFEF-4D27-88A3-CBC1BCE0DA4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0929EC2A-EFEF-4D27-88A3-CBC1BCE0DA4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B984D6C-AD49-40CD-AFCC-B96C4AD8F489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B984D6C-AD49-40CD-AFCC-B96C4AD8F489}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B984D6C-AD49-40CD-AFCC-B96C4AD8F489}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B984D6C-AD49-40CD-AFCC-B96C4AD8F489}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D114F61A-32CA-465B-A6AE-A0CDE321ED3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D114F61A-32CA-465B-A6AE-A0CDE321ED3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D114F61A-32CA-465B-A6AE-A0CDE321ED3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D114F61A-32CA-465B-A6AE-A0CDE321ED3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8DBE6E4-62DC-432A-BD20-E89B595B4ED8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8DBE6E4-62DC-432A-BD20-E89B595B4ED8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8DBE6E4-62DC-432A-BD20-E89B595B4ED8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8DBE6E4-62DC-432A-BD20-E89B595B4ED8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
