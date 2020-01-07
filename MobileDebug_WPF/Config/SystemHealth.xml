@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SystemHealth>
+  <Heading>
+    <Name>System Health</Name>
+    <isEM>true</isEM>
+    <isLD>true</isLD>
+    <Label>
+      <Name>Drive: </Name><!-- Name to display -->
+      <FilePath>\mnt\status\disk\health</FilePath><!-- Path to the file that contains the data to read -->
+      <Description>Text</Description><!-- This will show up as a tooltip when you highlight the entry -->
+      <Tail>% of 100%</Tail><!-- This gets appended to the end of the entry -->
+      <Threshold_ld>30.0</Threshold_ld><!-- This is a value to compare the data read from the file too. It determines when to show the entry as green or yellow-->
+      <Threshold_em>30.0</Threshold_em>
+      <Greater>false</Greater><!-- When this is a "1" the entry will be yellow if the data read from the file is greater than the threshold. Less than when "0"-->
+      <Multiplier>1.0</Multiplier><!-- This is multiplied by the data read from the file. i.e. it moves the decimal point.-->
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>Available RAM: </Name>
+      <FilePath>\mnt\status\mobo\availableRam</FilePath>
+      <Description></Description>
+      <Tail> M</Tail>
+      <Threshold_ld>200</Threshold_ld>
+      <Threshold_em>500</Threshold_em>
+      <Greater>false</Greater>
+      <Multiplier>1.0</Multiplier>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>Average Temperature: </Name>
+      <FilePath>\mnt\status\mobo\cpuTempAvg</FilePath>
+      <Description></Description>
+      <Tail> C</Tail>
+      <Threshold_ld>45.0</Threshold_ld>
+      <Threshold_em>52.0</Threshold_em>
+      <Greater>true</Greater>
+      <Multiplier>0.001</Multiplier>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+    </Label>
+  </Heading>
+</SystemHealth>

@@ -1,0 +1,162 @@
+﻿<Window x:Class="MobileDebug_WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MobileDebug_WPF"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded" LocationChanged="Window_LocationChanged" SizeChanged="Window_SizeChanged" Closing="Window_Closing">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="28"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ToolBar Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+            <Menu>
+                <MenuItem x:Name="MenuFile" Header="File"/>
+            </Menu>
+            <Label x:Name="lblStatus"/>
+        </ToolBar>
+        <Expander Grid.Row="1" Grid.Column="0" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3">
+            <Expander.Header>
+                <TextBlock Text="System Information" RenderTransformOrigin="0.5,0.5" Margin="0,0,0,0" Width="Auto">
+                    <TextBlock.LayoutTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="90"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </TextBlock.LayoutTransform>
+                    <TextBlock.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="0"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+            </Expander.Header>
+            <TreeView x:Name="TvSystemData" BorderThickness="0" Margin="10"/>
+        </Expander>
+
+        <Expander Grid.Row="1" Grid.Column="1" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3">
+            <Expander.Header>
+                <TextBlock Text="Table of Contents" RenderTransformOrigin="0.5,0.5" Margin="0,0,0,0" Width="Auto">
+                    <TextBlock.LayoutTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="90"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </TextBlock.LayoutTransform>
+                    <TextBlock.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="0"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+            </Expander.Header>
+            <ScrollViewer>
+                <StackPanel x:Name="stkTOC" Margin="10"/>
+            </ScrollViewer>
+        </Expander>
+        <TabControl Grid.Row="1" Grid.Column="2" x:Name="tbcMain" Margin="3" >
+            <TabItem x:Name="tabLogs" Header="Logs">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="300" Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+                        <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" x:Name="flpLogs" Margin="3" CanVerticallyScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    </ScrollViewer>
+                    <TextBox x:Name="TxtLogLinesPrev" Grid.Column="1" Grid.Row="0" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
+                    <RichTextBox Grid.Column="1" Grid.Row="1" x:Name="rtbLogLines" Margin="3" AutoWordSelection="False" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
+                    
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="tabWiFiLogs" Header="WiFi">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer Grid.Row="0" Grid.Column="0" Grid.RowSpan="2">
+                        <StackPanel Grid.Column="0" x:Name="flpWiFiLogs" Margin="3" CanVerticallyScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    </ScrollViewer>
+                    <oxy:PlotView x:Name="Chart_WiFiDecibels" Grid.Row="0" Grid.Column="2" />
+                    <oxy:PlotView x:Name="Chart_WiFiBaud" Grid.Row="1" Grid.Column="2"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="tabBatteryLogs" Header="Battery">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer Grid.Row="0" Grid.Column="0" Grid.RowSpan="2">
+                        <StackPanel Grid.Column="0" x:Name="flpBatteryLogs" Margin="3" CanVerticallyScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    </ScrollViewer>
+                    <oxy:PlotView x:Name="Chart_BatteryVoltage" Grid.Row="0" Grid.Column="2" />
+                    <oxy:PlotView x:Name="Chart_BatteryChargeState" Grid.Row="1" Grid.Column="2"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="tabMapContents" Header="Map Contents">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="300" Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0">
+                        <StackPanel Grid.Row="0" x:Name="flpMapSections" Margin="3" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" CanHorizontallyScroll="True" ScrollViewer.CanContentScroll="True" Orientation="Horizontal"/>
+                    </ScrollViewer>
+                    <RichTextBox Grid.Row="1" x:Name="rtbMap" Margin="3" AutoWordSelection="False" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="tabMapImage" Header="Map Contents">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="300" Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBox x:Name="TxtMapPointsOffMap" Grid.Row="0" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
+                    <local:ZoomBorder Grid.Row="1" x:Name="border" Margin="3" VerticalAlignment="Top" ClipToBounds="True" Background="Gray">
+                       <Image Stretch="None"/>                     
+                    </local:ZoomBorder>
+
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</Window>
