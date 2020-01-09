@@ -37,7 +37,8 @@ namespace MobileDebug_WPF
         }
 
         public static SimpleDataBase Settings;
-        public const string UserDataDirectory = "UserData";
+        public static string AppRootDirectory => System.AppDomain.CurrentDomain.BaseDirectory;
+        public static string UserDataDirectory => System.AppDomain.CurrentDomain.BaseDirectory + "UserData\\";
 #if !DEBUG
         public static TextWriter ConsoleOut;
 #endif
@@ -66,10 +67,10 @@ namespace MobileDebug_WPF
                 Console.WriteLine($"Creating directory: {UserDataDirectory}");
                 Directory.CreateDirectory(UserDataDirectory);
             }
-            Settings = new SimpleDataBase().Init($"{UserDataDirectory}\\ApplicationSettings.sqlite", false);
+            Settings = new SimpleDataBase().Init($"{UserDataDirectory}ApplicationSettings.sqlite", false);
             if (Settings == null)
             {
-                Console.WriteLine($"Could not initialize the application settings database: {UserDataDirectory}\\ApplicationSettings.sqlite");
+                Console.WriteLine($"Could not initialize the application settings database: {UserDataDirectory}ApplicationSettings.sqlite");
                 throw new Exception();
             }
             else

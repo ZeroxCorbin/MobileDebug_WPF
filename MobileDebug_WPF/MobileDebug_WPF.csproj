@@ -19,7 +19,7 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -33,7 +33,8 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -92,13 +93,26 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Config\SimpleDataBase.cs" />
+    <Compile Include="LogDetailsEditor.xaml.cs">
+      <DependentUpon>LogDetailsEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MobileDebugDownload.xaml.cs">
       <DependentUpon>MobileDebugDownload.xaml</DependentUpon>
     </Compile>
     <Compile Include="Structures\Logindices.cs" />
+    <Compile Include="XMLViewer.xaml.cs">
+      <DependentUpon>XMLViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="XMLViewer_ViewPort.xaml.cs">
+      <DependentUpon>XMLViewer_ViewPort.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ZoomBorder.xaml.cs">
       <DependentUpon>ZoomBorder.xaml</DependentUpon>
     </Compile>
+    <Page Include="LogDetailsEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -122,6 +136,14 @@
     <Page Include="MobileDebugDownload.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="XMLViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="XMLViewer_ViewPort.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ZoomBorder.xaml">
       <SubType>Designer</SubType>

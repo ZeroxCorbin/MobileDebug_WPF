@@ -19,6 +19,15 @@ namespace MobileDebug_WPF
             }
         }
 
+        public static void Save(string file, LogDetails logDetails)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(LogDetails));
+            using (StreamWriter sw = new StreamWriter(file))
+            {
+                serializer.Serialize(sw, logDetails);
+            }
+        }
+
         // NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.
         /// <remarks/>
         [System.SerializableAttribute()]

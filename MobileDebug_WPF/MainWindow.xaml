@@ -9,7 +9,7 @@
         Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded" LocationChanged="Window_LocationChanged" SizeChanged="Window_SizeChanged" Closing="Window_Closing">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="28"/>
+            <RowDefinition Height="AUTO"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -19,11 +19,19 @@
         </Grid.ColumnDefinitions>
         <ToolBar Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
             <Menu>
-                <MenuItem x:Name="MenuFile" Header="File"/>
+                <MenuItem x:Name="MenuFile" Header="File" VerticalContentAlignment="Center"/>
+                <MenuItem x:Name="MenuSettings" Header="Settings" VerticalContentAlignment="Center">
+                    <MenuItem x:Name="MenuSettings_Search" Header="Search Settings" VerticalContentAlignment="Center"/>
+                    <MenuItem x:Name="MenuSettings_Application" Header="Application Settings" VerticalContentAlignment="Center" Click="MenuSettings_Application_Click"/>
+                </MenuItem>
+                <MenuItem x:Name="MenuMap" Header="Map" VerticalContentAlignment="Center" Visibility="Collapsed"/>
+                <Separator Height="Auto" Width="1"/>
             </Menu>
-            <Label x:Name="lblStatus"/>
+            <Label Padding="10,2" Content="Status: " VerticalContentAlignment="Center"/>
+            <Label x:Name="lblStatus" Padding="5,2" VerticalContentAlignment="Center"/>
+            
         </ToolBar>
-        <Expander Grid.Row="1" Grid.Column="0" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3">
+        <Expander x:Name="ExpSystemInfo" Grid.Row="1" Grid.Column="0" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3" Collapsed="ExpSystemInfo_Collapsed" Expanded="ExpSystemInfo_Expanded">
             <Expander.Header>
                 <TextBlock Text="System Information" RenderTransformOrigin="0.5,0.5" Margin="0,0,0,0" Width="Auto">
                     <TextBlock.LayoutTransform>
@@ -47,7 +55,7 @@
             <TreeView x:Name="TvSystemData" BorderThickness="0" Margin="10"/>
         </Expander>
 
-        <Expander Grid.Row="1" Grid.Column="1" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3">
+        <Expander x:Name="ExpTOC" Grid.Row="1" Grid.Column="1" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3" Collapsed="ExpTOC_Collapsed" Expanded="ExpTOC_Expanded">
             <Expander.Header>
                 <TextBlock Text="Table of Contents" RenderTransformOrigin="0.5,0.5" Margin="0,0,0,0" Width="Auto">
                     <TextBlock.LayoutTransform>
@@ -143,14 +151,14 @@
 
                 </Grid>
             </TabItem>
-            <TabItem x:Name="tabMapImage" Header="Map Contents">
+            <TabItem x:Name="tabMapImage" Header="Map Image">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition MaxHeight="300" Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <TextBox x:Name="TxtMapPointsOffMap" Grid.Row="0" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
-                    <local:ZoomBorder Grid.Row="1" x:Name="border" Margin="3" VerticalAlignment="Top" ClipToBounds="True" Background="Gray">
+                    <local:ZoomBorder Grid.Row="1" x:Name="ImgMapBorder" Margin="3" VerticalAlignment="Top" ClipToBounds="True" Background="Gray">
                        <Image Stretch="None"/>                     
                     </local:ZoomBorder>
 
