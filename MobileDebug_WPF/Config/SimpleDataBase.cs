@@ -66,8 +66,8 @@ namespace MobileDebug_WPF
         {
             public double Top { get; set; } = 0;
             public double Left { get; set; } = 0;
-            public double Width { get; set; }
-            public double Height { get; set; }
+            public double Width { get; set; } = 1024;
+            public double Height { get; set; } = 768;
 
             public System.Windows.Rect Bounds => new System.Windows.Rect(Left, Top, Width, Height);
 

@@ -29,10 +29,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\ReleaseBuilds\MobileDebug_WPF\</OutputPath>
     <DefineConstants>
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -100,11 +100,8 @@
       <DependentUpon>MobileDebugDownload.xaml</DependentUpon>
     </Compile>
     <Compile Include="Structures\Logindices.cs" />
-    <Compile Include="XMLViewer.xaml.cs">
-      <DependentUpon>XMLViewer.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="XMLViewer_ViewPort.xaml.cs">
-      <DependentUpon>XMLViewer_ViewPort.xaml</DependentUpon>
+    <Compile Include="UserMessage.xaml.cs">
+      <DependentUpon>UserMessage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ZoomBorder.xaml.cs">
       <DependentUpon>ZoomBorder.xaml</DependentUpon>
@@ -137,13 +134,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="XMLViewer.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="UserMessage.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="XMLViewer_ViewPort.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ZoomBorder.xaml">
       <SubType>Designer</SubType>
@@ -194,6 +187,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Config\SystemMap.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="palette.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

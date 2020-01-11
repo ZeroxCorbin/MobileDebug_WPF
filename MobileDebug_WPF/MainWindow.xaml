@@ -17,7 +17,7 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <ToolBar Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+        <ToolBar Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" ScrollViewer.VerticalScrollBarVisibility="Disabled">
             <Menu>
                 <MenuItem x:Name="MenuFile" Header="File" VerticalContentAlignment="Center"/>
                 <MenuItem x:Name="MenuSettings" Header="Settings" VerticalContentAlignment="Center">
@@ -27,8 +27,8 @@
                 <MenuItem x:Name="MenuMap" Header="Map" VerticalContentAlignment="Center" Visibility="Collapsed"/>
                 <Separator Height="Auto" Width="1"/>
             </Menu>
-            <Label Padding="10,2" Content="Status: " VerticalContentAlignment="Center"/>
-            <Label x:Name="lblStatus" Padding="5,2" VerticalContentAlignment="Center"/>
+            <Label Content="Status: " VerticalContentAlignment="Center" Margin="20,0,0,0"/>
+            <Label x:Name="lblStatus" VerticalContentAlignment="Center" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}"/>
             
         </ToolBar>
         <Expander x:Name="ExpSystemInfo" Grid.Row="1" Grid.Column="0" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3" Collapsed="ExpSystemInfo_Collapsed" Expanded="ExpSystemInfo_Expanded">
@@ -138,7 +138,21 @@
 
                 </Grid>
             </TabItem>
-            <TabItem x:Name="tabMapContents" Header="Map Contents">
+            <TabItem x:Name="tabMapContents" Header="Map Contents (Parsed)">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="300" Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="3">
+                        <Button x:Name="BtnExpandAll" Content="Expand All" Click="BtnExpandAll_Click" Margin="5,3" Padding="3,1"/>
+                        <Button x:Name="BtnCollapseAll" Content="Collapse All" Click="BtnCollapseAll_Click" Margin="5,3" Padding="3,1"/>
+                        <CheckBox x:Name="ChkShowOnlyChildren" Content="Has Child" Click="ChkShowOnlyChildren_Click" Margin="5,3" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <TreeView x:Name="TvMapContents" Grid.Row="1"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="tabMapContentsRaw" Header="Map Contents (Raw)">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition MaxHeight="300" Height="Auto"/>
@@ -160,6 +174,15 @@
                     <TextBox x:Name="TxtMapPointsOffMap" Grid.Row="0" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
                     <local:ZoomBorder Grid.Row="1" x:Name="ImgMapBorder" Margin="3" VerticalAlignment="Top" ClipToBounds="True" Background="Gray">
                        <Image Stretch="None"/>                     
+                    </local:ZoomBorder>
+
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="tabMapWiFiHeat" Header="WiFi Heat Map">
+                <Grid>
+                    <local:ZoomBorder x:Name="ImgMapWiFiHeatBorder" Margin="3" VerticalAlignment="Top" ClipToBounds="True" Background="Gray">
+                        <Image Stretch="None"/>
                     </local:ZoomBorder>
 
                 </Grid>

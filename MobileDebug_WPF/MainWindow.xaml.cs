@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -25,6 +26,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml;
+using System.Windows.Threading;
 using static FileSearch.FileSearch;
 
 namespace MobileDebug_WPF
@@ -134,10 +136,14 @@ namespace MobileDebug_WPF
                 this.Top = 0;
                 this.Left = 0;
             }
+
+            CheckForSearchConfigFiles();
+
+
             MenuItem mi = new MenuItem()
             {
                 Header = "Log Searches",
-                Tag = SearchConfigurationPath + "LogDetails.xml",
+                Tag = App.UserDataDirectory + "LogDetails.xml",
             };
             mi.Click += MenuSettings_Search_Click;
             MenuSettings_Search.Items.Add(mi);
@@ -148,25 +154,31 @@ namespace MobileDebug_WPF
             tabBatteryLogs.Visibility = Visibility.Collapsed;
             tabWiFiLogs.Visibility = Visibility.Collapsed;
             tabMapContents.Visibility = Visibility.Collapsed;
+            tabMapContentsRaw.Visibility = Visibility.Collapsed;
             tabMapImage.Visibility = Visibility.Collapsed;
+            tabMapWiFiHeat.Visibility = Visibility.Collapsed;
 
             FormLoading = false;
         }
 
-        private void MenuSettings_Search_Click(object sender, RoutedEventArgs e)
+        private void CheckForSearchConfigFiles()
         {
-            LogDetailsEditor win = new LogDetailsEditor
+            string[] targetFiles = Directory.GetFiles(App.UserDataDirectory, "*.xml");
+            foreach (string fileName in Directory.GetFiles(SearchConfigurationPath, "*.xml"))
             {
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this
-            };
-            win.Show();
+                bool found = false;
+                foreach (string target in targetFiles)
+                    if (System.IO.Path.GetFileName(target).Equals(System.IO.Path.GetFileName(fileName)))
+                    {
+                        found = true;
+                        break;
+                    }
+                if (!found)
+                    File.Copy(fileName, $"{App.UserDataDirectory}{System.IO.Path.GetFileName(fileName)}");
+            }
         }
 
-        private void MenuSettings_Application_Click(object sender, RoutedEventArgs e)
-        {
 
-        }
 
         public delegate void Run();
 
@@ -176,7 +188,7 @@ namespace MobileDebug_WPF
         }
         private void RunThread()
         {
-            InvokeThis(new Action(() => { ClearForm(); }));
+            InvokeThis(new Action(() => { ClearForm(true); }));
 
             if (!string.IsNullOrEmpty(ZipFilePath))
             {
@@ -267,7 +279,7 @@ namespace MobileDebug_WPF
                 }
             }
 
-            DirectoryInfo di = new DirectoryInfo(WorkingPath + "\\home\\admin");
+            DirectoryInfo di = new DirectoryInfo(WorkingPath + "home\\admin");
             HasMap = false;
             Map = null;
             foreach (FileInfo fi in di.GetFiles())
@@ -277,8 +289,8 @@ namespace MobileDebug_WPF
                     UpdateStatus($"Map found: {fi.Name} - Loading Contents...");
                     Map = new Map(fi.FullName);
                     HasMap = true;
-
-                    Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((path) => { LoadMap(path); }), Map.MapFile.FilePath);
+                    InvokeThis(new Action(() => { LoadMapContents(); }));
+                    Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((path) => { LoadMapContentsRaw(path); }), Map.MapFile.FilePath);
 
                     if (!IsEM)
                         LoadLoggedDataThread(Map);
@@ -298,178 +310,50 @@ namespace MobileDebug_WPF
 
             string mapPath = HasMap ? Map.MapFile.FilePath : string.Empty;
 
+            if (HasMap)
+                if (Map.MapFile.LoggedWifi != null)
+                {
+                    System.Drawing.Rectangle r = new System.Drawing.Rectangle(Map.Header.WidthOffset, Map.Header.HeightOffset, Map.Header.Width, Map.Header.Height);
+
+                    foreach (WifiLogs.WifiLogData s in Map.MapFile.LoggedWifi)
+                    {
+                        if (r.Contains(s.Position))
+                        {
+                            if (HeatPoints.Count() == 0)
+                            {
+                                HeatPoints.Add(new HeatPoint(s.Position, (byte)Math.Abs(s.Baud)));
+                                continue;
+                            }
+
+                            int i = 0;
+                            bool found = false;
+                            foreach(HeatPoint hp in HeatPoints.ToArray())
+                            {
+                                if(new System.Drawing.Rectangle(hp.X, hp.Y, 500, 500).Contains(s.Position))
+                                {
+                                    HeatPoints[i] = new HeatPoint(hp.Point, (byte)((hp.Intensity + Math.Abs(s.Baud)) / 2));
+                                    found = true;
+                                    break;
+                                }
+                                i++;
+                            }
+                            if (!found)
+                            {
+                                HeatPoints.Add(new HeatPoint(s.Position, (byte)Math.Abs(s.Baud)));
+                            }
+                        }
+                            
+                    }
+                }
+
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { SetupMapMenu(s); }), mapPath);
         }
 
-        private void SetupMapMenu(string mapPath)
-        {
-            if (HasMap)
-            {
-                MenuMap.Header = $"Map ({System.IO.Path.GetFileNameWithoutExtension(mapPath)})";
-                MenuMap.Visibility = Visibility.Visible;
-                MenuMap.Tag = mapPath;
 
-                MenuItem save = new MenuItem()
-                {
-                    Header = "Save As",
-                    Tag = mapPath
-                };
-                save.Click += Save_Click;
-                MenuMap.Items.Add(save);
-
-                MenuItem dxMM;
-                string dxPath = App.Settings.GetValue<string>("DXMobileMapPath", null);
-                if (dxPath == null)
-                {
-                    dxMM = new MenuItem()
-                    {
-                        Header = "Get DXMobileMap",
-                        Tag = mapPath
-                    };
-                    dxMM.Click += MapDBGetDxMobileMap_Click;
-                }
-                else
-                {
-                    dxMM = new MenuItem()
-                    {
-                        Header = "Create DXMobileMap Database",
-                        Tag = mapPath
-                    };
-                    dxMM.Click += MapDBCreateFile_Click;
-                }
-
-
-                MenuMap.Items.Add(dxMM);
-            }
-            else
-            {
-                MenuMap.Header = "Map";
-                MenuMap.Visibility = Visibility.Collapsed;
-                MenuMap.Tag = string.Empty;
-
-                MenuMap.Items.Clear();
-            }
-        }
-
-        private void Save_Click(object sender, RoutedEventArgs e)
-        {
-            SaveMapFile();
-        }
-
-        private bool SaveMapFile()
-        {
-            Microsoft.Win32.SaveFileDialog file = new Microsoft.Win32.SaveFileDialog
-            {
-                CheckFileExists = false,
-                CheckPathExists = true,
-                Filter = "Map file (*.map)|*.map",
-                FilterIndex = 1
-            };
-
-            string filePath;
-            if (file.ShowDialog() == true)
-            {
-                filePath = file.FileName;
-            }
-            else return false;
-
-            Map.MapFile.FileToContents();
-            Map.MapFile.FilePath = filePath;
-            Map.MapFile.ContentsToFile();
-
-            return true;
-        }
-        public void MapDBGetDxMobileMap_Click(object sender, RoutedEventArgs e)
-        {
-            Process.Start(@"https://github.com/ZeroxCorbin/DxMobileMap_WPF");
-        }
-        public void MapDBCreateFile_Click(object sender, RoutedEventArgs e)
-        {
-            string dxPath = App.Settings.GetValue<string>("DXMobileMapPath", null);
-            if (dxPath == null)
-            {
-                UpdateStatus("Please select the DxMobileMap.exe directory in the Application Settings.");
-                return;
-            }
-
-
-            string dxDBPath = GetDXMobileMapDatabasePath(dxPath);
-            if (dxDBPath == null)
-            {
-                UpdateStatus("Please run DxMobileMap.exe once to allow it's application settings to be created. Then run this command again.");
-                return;
-            }
-
-            if (!SaveMapFile())
-                return;
-
-            string dbPath = $"{dxDBPath}\\{Map.MapFile.FileName}{MapDatabaseExtension}";
-
-            int i = 1;
-            while (File.Exists(dbPath))
-            {
-                dbPath = $"{dxDBPath}\\{Map.MapFile.FileName}_{i++}{MapDatabaseExtension}";
-                if (i > 200)
-                    return;
-            }
-
-            UpdateStatus($"Opening map database: {dbPath}");
-            using (SimpleDataBase mapDb = new SimpleDataBase().Init(dbPath, MapDatabaseTableName, true))
-            {
-                if (mapDb == null) return;
-
-                mapDb.SetValue(MapDatabaseFileKey, Map.MapFile);
-                mapDb.SetValue($"{Map.MapFile.LoadedUID}{MapDatabaseContentsDateKey}", Map.MapFile.FileLastUpdated);
-                mapDb.SetValue($"{Map.MapFile.LoadedUID}{MapDatabaseContentsHeaderKey}", Map.Header);
-
-                Map.MapFile.FileToContents();
-                mapDb.SetValue($"{Map.MapFile.LoadedUID}{MapDatabaseContentsKey}", Map.MapFile.Contents);
-                Map.MapFile.Contents = "";
-
-                string bmp = DrawMap(Map, 220, 220);
-                mapDb.SetValue($"{Map.MapFile.LoadedUID}_thumbnail", bmp);
-
-                if (Map.MapFile.LoggedStatus != null)
-                    if (Map.MapFile.LoggedStatus.Count > 0)
-                    {
-                        mapDb.SetValue($"{MapDatabasePositionsKey}", Map.MapFile.LoggedStatus);
-                        mapDb.SetValue("UseLoggedPositions", true);
-                    }
-
-                if (Map.MapFile.LoggedWifi != null)
-                    if (Map.MapFile.LoggedWifi.Count > 0)
-                    {
-                        mapDb.SetValue($"{MapDatabaseWifiKey}", Map.MapFile.LoggedWifi);
-                        mapDb.SetValue("UseLoggedWiFi", true);
-                    }
-
-                Map.MapFile.DatabasePath = dbPath;
-
-                UpdateStatus($"Launching DxMobileMap");
-                if (File.Exists($"{dxPath}\\DxMobileMap_WPF.exe"))
-                    Process.Start($"{dxPath}\\DxMobileMap_WPF.exe");
-
-                return;
-            }
-        }
-        private string GetDXMobileMapDatabasePath(string dxPath)
-        {
-            if (File.Exists(dxPath + "UserData\\ApplicationSettings.sqlite"))
-                using (SimpleDataBase dxDb = new SimpleDataBase().Init(dxPath + "UserData\\ApplicationSettings.sqlite", false))
-                {
-                    if (dxDb == null)
-                        return null;
-
-                    return dxDb.GetValue<string>("MapDatabaseDirectory", null);
-
-                }
-            else
-                return null;
-        }
         private void UpdateStatus(string msg)
         {
-            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { lblStatus.Content = s; }), msg);
-            Thread.Sleep(1);
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { lblStatus.Content = s; }), msg);
+            //Thread.Sleep(1);
         }
 
         public delegate Map LoadLoggedDataDelegate(Map map);
@@ -477,7 +361,7 @@ namespace MobileDebug_WPF
         private Map LoadLoggedDataThread(Map map)
         {
             map.MapFile.LoggedWifi = new List<MobileLogs.WifiLogs.WifiLogData>();
-            MobileLogs.MultiFile mf = new MobileLogs.MultiFile("wifiLog", WorkingPath + "\\var\\log");
+            MobileLogs.MultiFile mf = new MobileLogs.MultiFile("wifiLog", WorkingPath + "var\\log");
             mf.FileOpened += Mf_FileOpened;
 
             var wifiFiles = mf.GetResults<MobileLogs.WifiLogs>();
@@ -516,12 +400,18 @@ namespace MobileDebug_WPF
 
         //}
 
-        private void ClearForm()
+        private void ClearForm(bool removeOldFiles)
         {
             tabBatteryLogs.Visibility = Visibility.Collapsed;
             tabWiFiLogs.Visibility = Visibility.Collapsed;
             tabMapContents.Visibility = Visibility.Collapsed;
+            tabMapContentsRaw.Visibility = Visibility.Collapsed;
             tabMapImage.Visibility = Visibility.Collapsed;
+            tabMapWiFiHeat.Visibility = Visibility.Collapsed;
+
+            HeatPoints.Clear();
+            ImgMapWiFiHeatBorder.Child = null;
+            ImgMapBorder.Child = null;
 
             MenuMap.Header = "Map";
             MenuMap.Visibility = Visibility.Collapsed;
@@ -536,29 +426,23 @@ namespace MobileDebug_WPF
             stkTOC.Children.Clear();
 
             TvSystemData.Items.Clear();
+            TvMapContents.Items.Clear();
 
             rtbLogLines.Document.Blocks.Clear();
 
             TxtLogLinesPrev.Text = string.Empty;
-
-            ImgMapBorder.Child = null;
-            tabMapImage.Visibility = Visibility.Collapsed;
 
             LogDetails = new List<LogDetails_class>();
             LogIndices = new LogIndices();
 
             IsEM = false;
 
-            if (ZipFilePath != null)
-            {
-                if (WorkingPath != "")
-                {
-                    if (!RemoveWorkDir())
-                    {
-                        MessageBox.Show("The extraction directory already exists and could not be removed.", "Ooops!", MessageBoxButton.OK);
-                    }
-                }
-            }
+            if (removeOldFiles)
+                if (ZipFilePath != null)
+                    if (WorkingPath != "")
+                        if (!RemoveWorkDir())
+                            UserMessage.Show(this, "The extraction directory already exists and could not be removed.", "Ooops!", new List<string>() { "Ok" });
+
 
             GC.Collect();
         }
@@ -601,10 +485,19 @@ namespace MobileDebug_WPF
 
         private string GetLineFromFile(string filePath)
         {
-            using (StreamReader file = new StreamReader(filePath))
+            try
             {
-                return file.ReadLine();
+                using (StreamReader file = new StreamReader(filePath))
+                {
+                    return file.ReadLine();
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+
         }
 
         //private void CreateZipFile()
@@ -672,12 +565,12 @@ namespace MobileDebug_WPF
 
         private void CheckProductType()
         {
-            if (GetLineFromFile(WorkingPath + "\\mnt\\status\\platform\\productType").Contains("EM")) IsEM = true;
+            if (GetLineFromFile(WorkingPath + "mnt\\status\\platform\\productType").Contains("EM")) IsEM = true;
             else IsEM = false;
         }
         private void LoadSystemHealth()
         {
-            SystemHealth_Serializer.SystemHealth serial = SystemHealth_Serializer.Load($"{SearchConfigurationPath}SystemHealth.xml");
+            SystemHealth_Serializer.SystemHealth serial = SystemHealth_Serializer.Load($"{App.UserDataDirectory}SystemHealth.xml");
 
             foreach (SystemHealth_Serializer.SystemHealthHeading head in serial.Heading)
             {
@@ -695,7 +588,10 @@ namespace MobileDebug_WPF
                     if (IsEM && !label.isEM) continue;
                     if (!IsEM && !label.isLD) continue;
 
-                    double res = Convert.ToDouble(GetLineFromFile(WorkingPath + label.FilePath)) * Convert.ToDouble(label.Multiplier);
+                    string line = GetLineFromFile(WorkingPath + label.FilePath);
+                    double res = 0;
+                    if (line != null)
+                        res = Convert.ToDouble(line) * Convert.ToDouble(label.Multiplier);
 
                     TextBox txtLabel = new TextBox() { Text = label.Name + res.ToString() + label.Tail, IsReadOnly = true, BorderThickness = new Thickness(0), Margin = new Thickness(3) };
                     TreeViewItem tviLabel = new TreeViewItem()
@@ -732,7 +628,7 @@ namespace MobileDebug_WPF
         }//Updated
         private void LoadSystemDetails()
         {
-            SystemDetails_Serializer.SystemDetails serial = SystemDetails_Serializer.Load($"{SearchConfigurationPath}SystemDetails.xml");
+            SystemDetails_Serializer.SystemDetails serial = SystemDetails_Serializer.Load($"{App.UserDataDirectory}SystemDetails.xml");
 
             foreach (SystemDetails_Serializer.SystemDetailsHeading head in serial.Heading)
             {
@@ -750,7 +646,13 @@ namespace MobileDebug_WPF
                     if (IsEM && !label.isEM) continue;
                     if (!IsEM && !label.isLD) continue;
 
-                    TextBox txtLabel = new TextBox() { Text = label.Name + GetLineFromFile(WorkingPath + label.FilePath).Replace("\t", " , "), IsReadOnly = true, BorderThickness = new Thickness(0), Margin = new Thickness(3) };
+                    string line = GetLineFromFile(WorkingPath + label.FilePath);
+                    TextBox txtLabel = new TextBox() { IsReadOnly = true, BorderThickness = new Thickness(0), Margin = new Thickness(3) };
+                    if (line != null)
+                        txtLabel.Text = label.Name + line.Replace("\t", " , ");
+                    else
+                        txtLabel.Text = "File Not Found";
+
                     TreeViewItem tviLabel = new TreeViewItem()
                     {
                         Header = txtLabel,
@@ -764,7 +666,7 @@ namespace MobileDebug_WPF
         }//Updated
         private void LoadSystemApps()
         {
-            SystemApps_Serializer.SystemApps serial = SystemApps_Serializer.Load($"{SearchConfigurationPath}SystemApps.xml");
+            SystemApps_Serializer.SystemApps serial = SystemApps_Serializer.Load($"{App.UserDataDirectory}SystemApps.xml");
 
             DirectoryInfo di = new DirectoryInfo(WorkingPath + serial.Path);
 
@@ -811,7 +713,7 @@ namespace MobileDebug_WPF
         //Table of Contents TAB
         private void ReadTOC()
         {
-            using (StreamReader file = new StreamReader(WorkingPath + "\\toc.txt"))
+            using (StreamReader file = new StreamReader(WorkingPath + "toc.txt"))
             {
                 file.ReadLine();
                 file.ReadLine();
@@ -897,7 +799,7 @@ namespace MobileDebug_WPF
 
         private void SetupLogs()
         {
-            LogDetails_Serializer.LogDetails serial = LogDetails_Serializer.Load($"{SearchConfigurationPath}LogDetails.xml");
+            LogDetails_Serializer.LogDetails serial = LogDetails_Serializer.Load($"{App.UserDataDirectory}LogDetails.xml");
 
             int i = -1;
             foreach (LogDetails_Serializer.LogDetailsLog log in serial.Log)
@@ -1115,7 +1017,7 @@ namespace MobileDebug_WPF
         {
             IList<FileInfo> lst = new List<FileInfo>();
 
-            DirectoryInfo dir = new DirectoryInfo(WorkingPath + "\\var\\log\\");
+            DirectoryInfo dir = new DirectoryInfo(WorkingPath + "var\\log\\");
 
             IEnumerable<FileInfo> names = dir.GetFiles().OrderByDescending(f => f.LastWriteTime.Year <= 1601 ? f.CreationTime : f.LastWriteTime);
 
@@ -1285,7 +1187,7 @@ namespace MobileDebug_WPF
         //Battery TAB
         private void LoadBatteryLogs()
         {
-            DirectoryInfo dir = new DirectoryInfo(WorkingPath + "\\var\\robot\\logs\\");
+            DirectoryInfo dir = new DirectoryInfo(WorkingPath + "var\\robot\\logs\\");
 
             IEnumerable<FileInfo> names = dir.GetFiles().OrderByDescending(f => f.LastWriteTime.Year <= 1601 ? f.CreationTime : f.LastWriteTime);
 
@@ -1425,213 +1327,356 @@ namespace MobileDebug_WPF
             System.Diagnostics.Process.Start(log);
         }
 
-
-        private string DrawMap(Map map, int width, int height)
+        //Map TABs
+        private void LoadMapContents()
         {
-
-            //DrawingVisual dv = new DrawingVisual();
-            //Pen black = new Pen(Brushes.Black, 20);
-
-            //map.Header.SetScaleF(1024, 1024);
-            //using (DrawingContext dc = dv.RenderOpen())
-            //{
-            //    //dc..FillRectangle(, 0, 0, map.Header.WidthScaled, map.Header.HeightScaled);
-            //    dc.PushTransform(new TranslateTransform(-map.Header.WidthOffset, -map.Header.HeightOffset - map.Header.Height));
-            //    dc.PushTransform(new ScaleTransform(map.Header.ScaleFactor.Width, -map.Header.ScaleFactor.Height));
-
-            //    foreach (MapGeometry.Line ln in map.Geometry.Lines)
-            //        dc.DrawLine(black, new Point(ln.Start.X,ln.Start.Y), new Point(ln.End.X,ln.End.Y));
-
-            //    foreach (System.Drawing.Point ln in map.Geometry.Points)
-            //        dc.DrawRectangle(Brushes.Black, black, new Rect(ln.X, ln.Y, 20, 20));
-
-            //    //dc.DrawRectangle(Brushes.Green, null, new Rect(20, 20, 150, 100));
-            //}
-
-            //RenderTargetBitmap rtb = new RenderTargetBitmap(map.Header.WidthScaled, map.Header.HeightScaled, 96, 96, PixelFormats.Pbgra32);
-            //rtb.Render(dv);
-
-            //return rtb;
-
-            map.Header.SetScaleF(width, height);
-            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(map.Header.WidthScaled, map.Header.HeightScaled, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
-
-            using (System.Drawing.Pen blackPen = new System.Drawing.Pen(System.Drawing.Color.Black, 20))
-            {
-                using (System.Drawing.Brush blackBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Black),
-                                            whiteBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
-                {
-                    using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
-                    {
-                        //picMapGraphics.Image = bm;
-                        g.FillRectangle(whiteBrush, 0, 0, map.Header.WidthScaled, map.Header.HeightScaled);
-                        g.TranslateTransform(-map.Header.WidthOffset, -map.Header.HeightOffset - map.Header.Height);
-                        g.ScaleTransform(map.Header.ScaleFactor.Width, -map.Header.ScaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
-
-                        foreach (MapGeometry.Line ln in map.Geometry.Lines)
-                            g.DrawLine(blackPen, ln.Start, ln.End);
-
-                        foreach (System.Drawing.Point ln in map.Geometry.Points)
-                            g.FillRectangle(blackBrush, ln.X, ln.Y, 20, 20);
-
-                        List<StatusLogs.Status> lost = DrawPositionsFromLog(g, map);
-
-                        DrawWiFiPositionsFromLog(g, map);
-                    }
-                }
-            }
-
-            using (MemoryStream memory = new MemoryStream())
-            {
-                bmp.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
-                var SigBase64 = Convert.ToBase64String(memory.GetBuffer());
-                return SigBase64;
-            }
+            ParseMapHeader();
+            ParseMapInfo();
+            tabMapContents.Visibility = Visibility.Visible;
         }
-        private List<StatusLogs.Status> DrawPositionsFromLog(System.Drawing.Graphics g, Map map)
+        private void ParseMapHeader()
         {
-            List<StatusLogs.Status> lost = new List<StatusLogs.Status>();
-
-            if (map.MapFile.LoggedStatus == null) return lost;
-
-            System.Drawing.Rectangle r = new System.Drawing.Rectangle(map.Header.WidthOffset, map.Header.HeightOffset, map.Header.Width, map.Header.Height);
-            int sz = (int)(40.0 * (1 + Math.Abs((map.Header.ScaleFactor.Width - 1.0))));
-            System.Drawing.Brush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue);
-            foreach (StatusLogs.Status s in map.MapFile.LoggedStatus)
+            TreeViewItem tviHeaderMain = new TreeViewItem()
             {
-                if (r.Contains(s.Position))
-                    g.FillPie(blueBrush, new System.Drawing.Rectangle(s.Position.X, s.Position.Y, sz, sz), 0, 360);
-                else
-                    lost.Add(s);
-            }
-            return lost;
-        }
-
-        private void DrawWiFiPositionsFromLog(System.Drawing.Graphics g, Map map)
-        {
-            if (map.MapFile.LoggedWifi == null) return;
-
-            System.Drawing.Rectangle r = new System.Drawing.Rectangle(map.Header.WidthOffset, map.Header.HeightOffset, map.Header.Width, map.Header.Height);
-            int sz = (int)(40.0 * (1 + Math.Abs((map.Header.ScaleFactor.Width - 1.0))));
-            foreach (WifiLogs.WifiLogData s in map.MapFile.LoggedWifi)
-            {
-                System.Drawing.Brush bBrush = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(255, 255, 0, 0));
-
-                if (r.Contains(s.Position))
-                    g.FillPie(bBrush, new System.Drawing.Rectangle(s.Position.X, s.Position.Y, sz, sz), 0, 360);
-            }
-        }
-
-        public BitmapImage Base64StringToBitmap(string base64String)
-        {
-            BitmapImage bitmapImage = new BitmapImage();
-            byte[] byteBuffer = Convert.FromBase64String(base64String);
-            using (MemoryStream memoryStream = new MemoryStream(byteBuffer))
-            {
-                memoryStream.Position = 0;
-
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memoryStream;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-            }
-
-            return bitmapImage;
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            rtbLogLines.SelectionChanged += RtbLogLines_SelectionChanged;
-            rtbLogLines.Selection.Changed += Selection_Changed;
-            MenuItem men = new MenuItem()
-            {
-                Header = "Open Zip File"
+                Header = new Label() { Content = new Bold(new System.Windows.Documents.Run("Map Header") { FontSize = 20 }) }
             };
-            men.Click += MenuOpenZipFile_Click;
 
-            MenuFile.Items.Add(men);
-
-            UpdateHistoryMenuItems(App.Settings.GetValue("FileHistory", new List<string>()));
-        }
-
-        private void Selection_Changed(object sender, EventArgs e)
-        {
-
-        }
-
-        private void RtbLogLines_SelectionChanged(object sender, RoutedEventArgs e)
-        {
-            TextPointer txtP = rtbLogLines.CaretPosition.GetLineStartPosition(0).GetInsertionPosition(LogicalDirection.Forward);
-            int logLineNumber = -1;
-            bool found = false;
-            while (!found)
+            StackPanel stkHeaderDataMain = new StackPanel()
             {
-                char[] text = new char[10];
 
-                if (txtP.GetTextInRun(LogicalDirection.Forward, text, 0, 10) > 0)
+            };
+            TreeViewItem tviHeaderData = new TreeViewItem()
+            {
+                Header = stkHeaderDataMain
+            };
+
+            foreach (PropertyInfo prop in Map.Header.GetType().GetProperties())
+            {
+                var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+                if (type == typeof(float) | type == typeof(double) | type == typeof(int))
                 {
-                    foreach (char c in text)
-                        if (c.Equals('\t'))
-                        {
-                            found = true;
-                            break;
-                        }
-                    if (found)
+                    StackPanel stkHeaderData = new StackPanel()
                     {
-                        string output = new string(text.TakeWhile(char.IsDigit).ToArray());
-                        int.TryParse(output, out logLineNumber);
-                        break;
-                    }
+                        Orientation = Orientation.Horizontal,
+                    };
+                    stkHeaderData.Children.Add(new Label() { Content = prop.Name });
+                    stkHeaderData.Children.Add(new TextBox() { Text = $"{prop.GetValue(Map.Header, null).ToString()}", IsReadOnly = true, VerticalContentAlignment = System.Windows.VerticalAlignment.Center, BorderBrush = this.Background });
 
+                    stkHeaderDataMain.Children.Add(stkHeaderData);
                 }
-                else
-                    return;
-
-                TextPointer txtP1 = txtP.GetLineStartPosition(-1, out int skipped).GetInsertionPosition(LogicalDirection.Forward);
-                if (skipped == -1)
-                    txtP = txtP1;
-                else
-                    return;
             }
 
-            //int currentLineNumber;
-            //txtP.GetLineStartPosition(-int.MaxValue, out int lineMoved);
-            //currentLineNumber = -lineMoved;
-            bool found1 = false;
-            FileSearchResults res = null;
-            foreach (FileSearchResults res1 in LogDetails[LogIndices.log].SearchResults[0])
-                if (res1.LineNumber == logLineNumber)
+            tviHeaderMain.Items.Add(tviHeaderData);
+            TvMapContents.Items.Add(tviHeaderMain);
+        }
+        private void ParseMapInfo()
+        {
+            TreeViewItem tviMapInfoMain = new TreeViewItem()
+            {
+                Header = new Label() { Content = new Bold(new System.Windows.Documents.Run("Map Info") { FontSize = 20 }) }
+            };
+
+            TvMapContents.Items.Add(tviMapInfoMain);
+
+            foreach (MapInfo.InfoType mInfo in Map.Info.List)
+            {
+                TreeViewItem tviMapInfoTypeMain = new TreeViewItem()
                 {
-                    found1 = true;
-                    res = res1;
-                    break;
+                    Header = new Label() { Content = new Bold(new System.Windows.Documents.Run(mInfo.Name)) }
+                };
+                tviMapInfoMain.Items.Add(tviMapInfoTypeMain);
+
+                StackPanel stkMapInfoTypeData = new StackPanel()
+                {
+
+                };
+                TreeViewItem tviMapInfoTypeData = new TreeViewItem()
+                {
+                    Header = stkMapInfoTypeData
+                };
+                tviMapInfoTypeMain.Items.Add(tviMapInfoTypeData);
+
+                foreach (PropertyInfo prop in typeof(MapInfo.InfoType).GetProperties())
+                {
+                    var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+                    if (type == typeof(string))
+                    {
+                        object data = prop.GetValue(mInfo, null);
+                        string val = string.Empty;
+                        if (data != null)
+                            val = data.ToString();
+
+                        StackPanel stkMapInfoTypeDataItem = new StackPanel()
+                        {
+                            Orientation = Orientation.Horizontal,
+                        };
+                        stkMapInfoTypeDataItem.Children.Add(new Label() { Content = prop.Name });
+                        stkMapInfoTypeDataItem.Children.Add(new TextBox() { Text = $"{val}", IsReadOnly = true, VerticalContentAlignment = System.Windows.VerticalAlignment.Center, BorderBrush = this.Background });
+
+                        stkMapInfoTypeData.Children.Add(stkMapInfoTypeDataItem);
+                    }
+
+                    if (type == typeof(Dictionary<string, string>))
+                    {
+                        TreeViewItem tviMapInfoTypeParamDataMain = new TreeViewItem()
+                        {
+                            Header = new Label() { Content = new Bold(new System.Windows.Documents.Run(prop.Name)) }
+                        };
+                        tviMapInfoTypeMain.Items.Add(tviMapInfoTypeParamDataMain);
+
+                        StackPanel stkMapInfoTypeParamData = new StackPanel()
+                        {
+
+                        };
+                        TreeViewItem tviMapInfoTypeParamData = new TreeViewItem()
+                        {
+                            Header = stkMapInfoTypeParamData
+                        };
+                        tviMapInfoTypeParamDataMain.Items.Add(tviMapInfoTypeParamData);
+
+                        object data = prop.GetValue(mInfo, null);
+                        Dictionary<string, string> dict;
+                        if (data != null)
+                            dict = (Dictionary<string, string>)data;
+                        else
+                            dict = new Dictionary<string, string>();
+
+                        foreach (KeyValuePair<string, string> val in dict)
+                        {
+                            StackPanel stkMapInfoTypeDataParamItem = new StackPanel()
+                            {
+                                Orientation = Orientation.Horizontal,
+                            };
+                            stkMapInfoTypeDataParamItem.Children.Add(new Label() { Content = val.Key });
+                            stkMapInfoTypeDataParamItem.Children.Add(new TextBox() { Text = $"{val.Value}", IsReadOnly = true, VerticalContentAlignment = System.Windows.VerticalAlignment.Center, BorderBrush = this.Background });
+
+                            stkMapInfoTypeParamData.Children.Add(stkMapInfoTypeDataParamItem);
+                        }
+                    }
+
+                    if (type == typeof(Dictionary<string, MapArgDesc>))
+                    {
+                        TreeViewItem tviMapInfoTypeArgsMain = new TreeViewItem()
+                        {
+                            Header = new Label() { Content = new Bold(new System.Windows.Documents.Run(prop.Name)) }
+                        };
+                        tviMapInfoTypeMain.Items.Add(tviMapInfoTypeArgsMain);
+
+                        object data = prop.GetValue(mInfo, null);
+                        Dictionary<string, MapArgDesc> dict;
+                        if (data != null)
+                            dict = (Dictionary<string, MapArgDesc>)data;
+                        else
+                            dict = new Dictionary<string, MapArgDesc>();
+
+                        foreach (KeyValuePair<string, MapArgDesc> val in dict)
+                        {
+                            TreeViewItem tviMapInfoTypeArg = new TreeViewItem()
+                            {
+                                Header = new Label() { Content = new Bold(new System.Windows.Documents.Run(val.Key)) }
+                            };
+                            tviMapInfoTypeArgsMain.Items.Add(tviMapInfoTypeArg);
+
+                            StackPanel stkMapInfoTypeArgData = new StackPanel()
+                            {
+
+                            };
+                            TreeViewItem tviMapInfoTypeArgData = new TreeViewItem()
+                            {
+                                Header = stkMapInfoTypeArgData
+                            };
+                            tviMapInfoTypeArg.Items.Add(tviMapInfoTypeArgData);
+
+                            foreach (PropertyInfo prop1 in typeof(MapArgDesc).GetProperties())
+                            {
+                                var type1 = Nullable.GetUnderlyingType(prop1.PropertyType) ?? prop1.PropertyType;
+
+                                if (type1 == typeof(string))
+                                {
+                                    object data1 = prop1.GetValue(val.Value, null);
+
+                                    string val1 = string.Empty;
+                                    if (data1 != null)
+                                        val1 = data1.ToString();
+
+                                    StackPanel stkMapInfoTypeArgDataItem = new StackPanel()
+                                    {
+                                        Orientation = Orientation.Horizontal,
+                                    };
+                                    stkMapInfoTypeArgDataItem.Children.Add(new Label() { Content = prop1.Name });
+                                    stkMapInfoTypeArgDataItem.Children.Add(new TextBox() { Text = $"{val1}", VerticalContentAlignment = System.Windows.VerticalAlignment.Center, IsReadOnly = true, BorderBrush = this.Background });
+
+                                    stkMapInfoTypeArgData.Children.Add(stkMapInfoTypeArgDataItem);
+                                }
+
+                                if (type1 == typeof(Dictionary<string, string>))
+                                {
+                                    TreeViewItem tviMapInfoTypeArgParams = new TreeViewItem()
+                                    {
+                                        Header = new Label() { Content = new Bold(new System.Windows.Documents.Run(prop1.Name)) }
+                                    };
+                                    tviMapInfoTypeArgData.Items.Add(tviMapInfoTypeArgParams);
+
+                                    StackPanel stkMapInfoTypeArgParamsData = new StackPanel()
+                                    {
+
+                                    };
+                                    TreeViewItem tviMapInfoTypeArgParamsData = new TreeViewItem()
+                                    {
+                                        Header = stkMapInfoTypeArgParamsData
+                                    };
+                                    tviMapInfoTypeArgParams.Items.Add(tviMapInfoTypeArgParamsData);
+
+                                    object data2 = prop1.GetValue(val.Value, null);
+
+                                    Dictionary<string, string> dict2;
+                                    if (data2 != null)
+                                        dict2 = (Dictionary<string, string>)data2;
+                                    else
+                                        dict2 = new Dictionary<string, string>();
+
+                                    foreach (KeyValuePair<string, string> val2 in dict2)
+                                    {
+                                        StackPanel stkMapInfoTypeArgParamsDataItem = new StackPanel()
+                                        {
+                                            Orientation = Orientation.Horizontal,
+                                        };
+                                        stkMapInfoTypeArgParamsDataItem.Children.Add(new Label() { Content = val2.Key });
+                                        stkMapInfoTypeArgParamsDataItem.Children.Add(new TextBox() { Text = $"{val2.Value}", VerticalContentAlignment = System.Windows.VerticalAlignment.Center, IsReadOnly = true, BorderBrush = this.Background });
+
+                                        stkMapInfoTypeArgParamsData.Children.Add(stkMapInfoTypeArgParamsDataItem);
+                                    }
+                                }
+                            }
+                            //    StkMain.Children.Add(new Label() { Content = new Bold(new Run(val.Key)), Margin = new Thickness(20, 0, 0, 0) });
+                            //StkMain.Children.Add(new TextBox() { IsReadOnly = true, Text = $"{val.Value}", BorderBrush = this.Background, Margin = new Thickness(40, 0, 80, 0) });
+                        }
+                    }
+
+                    if (type == typeof(List<MapCairn>))
+                    {
+                        TreeViewItem tviMapInfoTypeChildMain = new TreeViewItem()
+                        {
+                            Header = new Label() { Content = new Bold(new System.Windows.Documents.Run(prop.Name)) }
+                        };
+                        tviMapInfoTypeMain.Items.Add(tviMapInfoTypeChildMain);
+
+                        object data = prop.GetValue(mInfo, null);
+
+                        List<MapCairn> dict;
+                        if (data != null)
+                            dict = (List<MapCairn>)data;
+                        else
+                            dict = new List<MapCairn>();
+
+                        if (dict.Count() > 0) tviMapInfoTypeMain.Tag = true;
+                        else tviMapInfoTypeMain.Tag = false;
+
+                        foreach (MapCairn mc in dict)
+                        {
+                            TreeViewItem tviMapInfoTypeChild = new TreeViewItem()
+                            {
+                                Header = new Label() { Content = new Bold(new System.Windows.Documents.Run($"{prop.Name}: {mc.Type}")) }
+                            };
+                            tviMapInfoTypeChildMain.Items.Add(tviMapInfoTypeChild);
+
+                            StackPanel stkMapInfoTypeChildData = new StackPanel()
+                            {
+
+                            };
+                            TreeViewItem tviMapInfoTypeChildData = new TreeViewItem()
+                            {
+                                Header = stkMapInfoTypeChildData
+                            };
+                            tviMapInfoTypeChild.Items.Add(tviMapInfoTypeChildData);
+
+                            foreach (PropertyInfo prop3 in typeof(MapCairn).GetProperties())
+                            {
+                                var type3 = Nullable.GetUnderlyingType(prop3.PropertyType) ?? prop3.PropertyType;
+
+                                object data3 = prop3.GetValue(mc, null);
+
+                                if (data3 == null)
+                                    data3 = string.Empty;
+
+                                StackPanel stkMapInfoTypeChildDataItem = new StackPanel()
+                                {
+                                    Orientation = Orientation.Horizontal,
+                                };
+                                stkMapInfoTypeChildDataItem.Children.Add(new Label() { Content = prop3.Name });
+                                stkMapInfoTypeChildDataItem.Children.Add(new TextBox() { Text = $"{data3.ToString()}", VerticalContentAlignment = System.Windows.VerticalAlignment.Center, IsReadOnly = true, BorderBrush = this.Background });
+
+                                stkMapInfoTypeChildData.Children.Add(stkMapInfoTypeChildDataItem);
+                            }
+                        }
+                    }
                 }
-            if (!found1) return;
 
-            TxtLogLinesPrev.Text = res.Buffer.GetHead();
-            for (int i = 0; i != 4; i++)
-                TxtLogLinesPrev.Text += res.Buffer.GetNext();
+            }
+        }
+        private void BtnExpandAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (object obj in this.TvMapContents.Items)
+                if (obj is TreeViewItem tvi)
+                    ExpandStateAll(tvi, true);
+        }
+        private void BtnCollapseAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (object obj in this.TvMapContents.Items)
+                if (obj is TreeViewItem tvi)
+                    ExpandStateAll(tvi, false);
+            foreach (object obj in this.TvMapContents.Items)
+                if (obj is TreeViewItem tvi)
+                    tvi.IsExpanded = true;
+        }
+        private void ExpandStateAll(TreeViewItem items, bool expand)
+        {
+            if (items.Visibility == Visibility.Collapsed) return;
+
+            items.IsExpanded = expand;
+            foreach (object obj in items.Items)
+                if (obj is TreeViewItem tvi)
+                    ExpandStateAll(tvi, expand);
+        }
+        private void ExpandStateAllMakeVisible(TreeViewItem items, bool expand)
+        {
+            items.Visibility = Visibility.Visible;
+            items.IsExpanded = expand;
+            foreach (object obj in items.Items)
+                if (obj is TreeViewItem tvi)
+                    ExpandStateAllMakeVisible(tvi, expand);
+        }
+        private void ChkShowOnlyChildren_Click(object sender, RoutedEventArgs e)
+        {
+            if (((CheckBox)sender).IsChecked.Value)
+            {
+                foreach (object obj in this.TvMapContents.Items)
+                    if (obj is TreeViewItem tviMain)
+                        foreach (object obj1 in tviMain.Items)
+                            if (obj1 is TreeViewItem tvi)
+                                if (tvi.Tag is bool val)
+                                    if (!val)
+                                    {
+                                        tvi.IsExpanded = false;
+                                        tvi.Visibility = Visibility.Collapsed;
+                                    }
+            }
+            else
+            {
+                foreach (object obj in this.TvMapContents.Items)
+                    if (obj is TreeViewItem tvi)
+                        ExpandStateAllMakeVisible(tvi, false);
+                foreach (object obj in this.TvMapContents.Items)
+                    if (obj is TreeViewItem tvi)
+                        tvi.IsExpanded = true;
+            }
         }
 
-        private void Window_LocationChanged(object sender, EventArgs e)
+        private void LoadMapContentsRaw(string mapPath)
         {
-            if (FormLoading) return;
-            WindowSettings.Update(this.Top, this.Left, this.Width, this.Height, this.WindowState);
-        }
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (FormLoading) return;
-            WindowSettings.Update(this.Top, this.Left, this.Width, this.Height, this.WindowState);
-        }
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            App.Settings.SetValue("WindowSettings", WindowSettings);
-        }
-
-        //Map TAB
-        private void LoadMap(string mapPath)
-        {
-            SystemMap_Serializer.SystemMap serial = SystemMap_Serializer.Load($"{SearchConfigurationPath}SystemMap.xml");
+            SystemMap_Serializer.SystemMap serial = SystemMap_Serializer.Load($"{App.UserDataDirectory}SystemMap.xml");
 
             StringBuilder sb = new StringBuilder();
             sb.Append(rtfHead);
@@ -1688,7 +1733,600 @@ namespace MobileDebug_WPF
 
             LoadRTF(sb.ToString(), rtbMap);
 
-            tabMapContents.Visibility = Visibility.Visible;
+            tabMapContentsRaw.Visibility = Visibility.Visible;
+        }
+        private string DrawMap(Map map, int width, int height)
+        {
+            map.Header.SetScaleF(width, height);
+
+            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(map.Header.WidthScaled, map.Header.HeightScaled, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+
+            using (System.Drawing.Pen blackPen = new System.Drawing.Pen(System.Drawing.Color.Black, 20))
+            using (System.Drawing.Brush blackBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Black),
+                                        whiteBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
+            using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
+            {
+                g.FillRectangle(whiteBrush, 0, 0, map.Header.WidthScaled, map.Header.HeightScaled);
+                g.TranslateTransform(-map.Header.WidthOffset, -map.Header.HeightOffset - map.Header.Height);
+                g.ScaleTransform(map.Header.ScaleFactor.Width, -map.Header.ScaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
+
+                foreach (MapGeometry.Line ln in map.Geometry.Lines)
+                    g.DrawLine(blackPen, ln.Start, ln.End);
+
+                foreach (System.Drawing.Point ln in map.Geometry.Points)
+                    g.FillRectangle(blackBrush, ln.X, ln.Y, 20, 20);
+
+                List<StatusLogs.Status> lost = DrawPositionsFromLog(g, map);
+                DrawWiFiPositionsFromLog(g, map);
+            }
+
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bmp.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+                var SigBase64 = Convert.ToBase64String(memory.GetBuffer());
+                return SigBase64;
+            }
+        }
+        private List<StatusLogs.Status> DrawPositionsFromLog(System.Drawing.Graphics g, Map map)
+        {
+            List<StatusLogs.Status> lost = new List<StatusLogs.Status>();
+
+            if (map.MapFile.LoggedStatus == null) return lost;
+
+            System.Drawing.Rectangle r = new System.Drawing.Rectangle(map.Header.WidthOffset, map.Header.HeightOffset, map.Header.Width, map.Header.Height);
+            int sz = (int)(40.0 * (1 + Math.Abs((map.Header.ScaleFactor.Width - 1.0))));
+            System.Drawing.Brush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue);
+            foreach (StatusLogs.Status s in map.MapFile.LoggedStatus)
+            {
+                if (r.Contains(s.Position))
+                    g.FillPie(blueBrush, new System.Drawing.Rectangle(s.Position.X, s.Position.Y, sz, sz), 0, 360);
+                else
+                    lost.Add(s);
+            }
+            return lost;
+        }
+        private void DrawWiFiPositionsFromLog(System.Drawing.Graphics g, Map map)
+        {
+            if (map.MapFile.LoggedWifi == null) return;
+
+            System.Drawing.Rectangle r = new System.Drawing.Rectangle(map.Header.WidthOffset, map.Header.HeightOffset, map.Header.Width, map.Header.Height);
+            int sz = (int)(40.0 * (1 + Math.Abs((map.Header.ScaleFactor.Width - 1.0))));
+            foreach (WifiLogs.WifiLogData s in map.MapFile.LoggedWifi)
+            {
+                System.Drawing.Brush bBrush = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(255, 255, 0, 0));
+
+                if (r.Contains(s.Position))
+                    g.FillPie(bBrush, new System.Drawing.Rectangle(s.Position.X, s.Position.Y, sz, sz), 0, 360);
+            }
+        }
+
+        public struct HeatPoint
+        {
+            public System.Drawing.Point Point;
+            public int X => Point.X;
+            public int Y => Point.Y;
+            public byte Intensity;
+            public HeatPoint(int iX, int iY, byte bIntensity)
+            {
+                Point = new System.Drawing.Point(iX, iY);
+                Intensity = bIntensity;
+            }
+            public HeatPoint(System.Drawing.Point point, byte bIntensity)
+            {
+                Point = point;
+                Intensity = bIntensity;
+            }
+
+        }
+        private List<HeatPoint> HeatPoints { get; set; } = new List<HeatPoint>();
+        private void DrawWiFiHeatMap(int width, int height)
+        {
+
+            UpdateStatus("Drawing WiFi Heat Map");
+
+            Map.Header.SetScaleF(width, height);
+
+            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(Map.Header.WidthScaled, Map.Header.HeightScaled, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+
+            bmp = DrawWiFiHeatMapFromLog(bmp);
+
+            using (System.Drawing.Pen blackPen = new System.Drawing.Pen(System.Drawing.Color.Black, 20))
+            using (System.Drawing.Brush blackBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Black),
+                                        whiteBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
+            using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
+            {
+                g.TranslateTransform(-Map.Header.WidthOffset, -Map.Header.HeightOffset - Map.Header.Height);
+                g.ScaleTransform(Map.Header.ScaleFactor.Width, -Map.Header.ScaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
+
+                foreach (MapGeometry.Line ln in Map.Geometry.Lines)
+                    g.DrawLine(blackPen, ln.Start, ln.End);
+
+                foreach (System.Drawing.Point ln in Map.Geometry.Points)
+                    g.FillRectangle(blackBrush, ln.X, ln.Y, 20, 20);
+
+                foreach (HeatPoint hp in HeatPoints)
+                    g.FillRectangle(blackBrush, hp.X, hp.Y, 20, 20);
+
+            }
+            string SigBase64;
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bmp.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+                SigBase64 = Convert.ToBase64String(memory.GetBuffer());
+            }
+
+            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { ImgMapWiFiHeatBorder.Child = new Image() { Source = Base64StringToBitmap(s) }; tabMapWiFiHeat.Visibility = Visibility.Visible; }), SigBase64);
+
+            UpdateStatus("Completed!");
+        }
+
+        private System.Drawing.Bitmap DrawWiFiHeatMapFromLog(System.Drawing.Bitmap bSurface)
+        {
+            bSurface = CreateIntensityMask(bSurface);
+
+            UpdateStatus("Colorizing WiFi Heat Map");
+
+            bSurface = Colorize(bSurface, 1);
+
+            return bSurface;
+        }
+
+        private System.Drawing.Bitmap CreateIntensityMask(System.Drawing.Bitmap bSurface)
+        {
+            // Create new graphics surface from memory bitmap
+            System.Drawing.Graphics DrawSurface = System.Drawing.Graphics.FromImage(bSurface);
+
+            DrawSurface.TranslateTransform(-Map.Header.WidthOffset, -Map.Header.HeightOffset - Map.Header.Height);
+            DrawSurface.ScaleTransform(Map.Header.ScaleFactor.Width, -Map.Header.ScaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
+            // Set background color to white so that pixels can be correctly colorized
+            DrawSurface.Clear(System.Drawing.Color.White);
+            double scale = Map.Header.Width / Map.Header.WidthScaled;
+            // Traverse heat point data and draw masks for each heat point
+            int cnt = HeatPoints.Count();
+            int i = 1;
+            int ii = 1;
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            foreach (HeatPoint DataPoint in HeatPoints)
+            {
+                // Render current heat point on draw surface
+                if (ii == 100)
+                {
+                    UpdateStatus($"Drawing WiFi Heat Map: {i} of {cnt}: {TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds).ToString()}");
+                    ii = 0;
+                }
+                i++;
+                ii++;
+                DrawHeatPoint(DrawSurface, DataPoint, (int)(1000 * scale));
+            }
+            return bSurface;
+        }
+        private void DrawHeatPoint(System.Drawing.Graphics Canvas, HeatPoint HeatPoint, int Radius)
+        {
+            // Create points generic list of points to hold circumference points
+            List<System.Drawing.Point> CircumferencePointsList = new List<System.Drawing.Point>();
+
+            // Create an empty point to predefine the point struct used in the circumference loop
+            System.Drawing.Point CircumferencePoint;
+
+            // Create an empty array that will be populated with points from the generic list
+            System.Drawing.Point[] CircumferencePointsArray;
+
+            // Calculate ratio to scale byte intensity range from 0-255 to 0-1
+            float fRatio = 1F / Byte.MaxValue;
+            // Precalulate half of byte max value
+            byte bHalf = Byte.MaxValue / 2;
+            // Flip intensity on it's center value from low-high to high-low
+            int iIntensity = (byte)(HeatPoint.Intensity - ((HeatPoint.Intensity - bHalf) * 2));
+            // Store scaled and flipped intensity value for use with gradient center location
+            float fIntensity = iIntensity * fRatio;
+
+            // Loop through all angles of a circle
+            // Define loop variable as a double to prevent casting in each iteration
+            // Iterate through loop on 10 degree deltas, this can change to improve performance
+            for (double i = 0; i <= 360; i += 10)
+            {
+                // Replace last iteration point with new empty point struct
+                CircumferencePoint = new System.Drawing.Point
+                {
+
+                    // Plot new point on the circumference of a circle of the defined radius
+                    // Using the point coordinates, radius, and angle
+                    // Calculate the position of this iterations point on the circle
+                    X = Convert.ToInt32(HeatPoint.X + Radius * Math.Cos(ConvertDegreesToRadians(i))),
+                    Y = Convert.ToInt32(HeatPoint.Y + Radius * Math.Sin(ConvertDegreesToRadians(i)))
+                };
+                // Add newly plotted circumference point to generic point list
+                CircumferencePointsList.Add(CircumferencePoint);
+            }
+
+            // Populate empty points system array from generic points array list
+            // Do this to satisfy the datatype of the PathGradientBrush and FillPolygon methods
+            CircumferencePointsArray = CircumferencePointsList.ToArray();
+
+            // Create new PathGradientBrush to create a radial gradient using the circumference points
+            System.Drawing.Drawing2D.PathGradientBrush GradientShaper = new System.Drawing.Drawing2D.PathGradientBrush(CircumferencePointsArray);
+            // Create new color blend to tell the PathGradientBrush what colors to use and where to put them
+            System.Drawing.Drawing2D.ColorBlend GradientSpecifications = new System.Drawing.Drawing2D.ColorBlend(3)
+            {
+                // Define positions of gradient colors, use intesity to adjust the middle color to
+                // show more mask or less mask
+                Positions = new float[3] { 0, fIntensity, 1 },
+                // Define gradient colors and their alpha values, adjust alpha of gradient colors to match intensity
+                Colors = new System.Drawing.Color[3]
+                {
+                    System.Drawing.Color.FromArgb(0, System.Drawing.Color.White),
+                    System.Drawing.Color.FromArgb(HeatPoint.Intensity, System.Drawing.Color.Black),
+                    System.Drawing.Color.FromArgb(HeatPoint.Intensity, System.Drawing.Color.Black)
+                }
+            };
+
+            // Pass off color blend to PathGradientBrush to instruct it how to generate the gradient
+            GradientShaper.InterpolationColors = GradientSpecifications;
+            // Draw polygon (circle) using our point array and gradient brush
+            Canvas.FillPolygon(GradientShaper, CircumferencePointsArray);
+        }
+        private double ConvertDegreesToRadians(double degrees)
+        {
+            double radians = (Math.PI / 180) * degrees;
+            return (radians);
+        }
+        public System.Drawing.Bitmap Colorize(System.Drawing.Bitmap Mask, byte Alpha)
+        {
+            // Create new bitmap to act as a work surface for the colorization process
+            System.Drawing.Bitmap Output = new System.Drawing.Bitmap(Mask.Width, Mask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            // Create a graphics object from our memory bitmap so we can draw on it and clear it's drawing surface
+            System.Drawing.Graphics Surface = System.Drawing.Graphics.FromImage(Output);
+            //Surface.TranslateTransform(-map.Header.WidthOffset, -map.Header.HeightOffset - map.Header.Height);
+            //Surface.ScaleTransform(map.Header.ScaleFactor.Width, -map.Header.ScaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
+
+            Surface.Clear(System.Drawing.Color.Transparent);
+            // Build an array of color mappings to remap our greyscale mask to full color
+            // Accept an alpha byte to specify the transparancy of the output image
+            System.Drawing.Imaging.ColorMap[] Colors = CreatePaletteIndex(Alpha);
+            // Create new image attributes class to handle the color remappings
+            // Inject our color map array to instruct the image attributes class how to do the colorization
+            System.Drawing.Imaging.ImageAttributes Remapper = new System.Drawing.Imaging.ImageAttributes();
+            Remapper.SetRemapTable(Colors);
+            // Draw our mask onto our memory bitmap work surface using the new color mapping scheme
+            Surface.DrawImage(Mask, new System.Drawing.Rectangle(0, 0, Mask.Width, Mask.Height), 0, 0, Mask.Width, Mask.Height, System.Drawing.GraphicsUnit.Pixel, Remapper);
+            // Send back newly colorized memory bitmap
+            return Output;
+        }
+        private System.Drawing.Imaging.ColorMap[] CreatePaletteIndex(byte Alpha)
+        {
+            System.Drawing.Imaging.ColorMap[] OutputMap = new System.Drawing.Imaging.ColorMap[256];
+            // Change this path to wherever you saved the palette image.
+            System.Drawing.Bitmap Palette = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromFile($"{AppPath}palette.bmp");
+            // Loop through each pixel and create a new color mapping
+            for (int X = 0; X <= 255; X++)
+            {
+                OutputMap[X] = new System.Drawing.Imaging.ColorMap
+                {
+                    OldColor = System.Drawing.Color.FromArgb(X, X, X),
+                    NewColor = System.Drawing.Color.FromArgb(Alpha, Palette.GetPixel(X, 0))
+                };
+            }
+            return OutputMap;
+        }
+
+
+        public BitmapImage Base64StringToBitmap(string base64String)
+        {
+            BitmapImage bitmapImage = new BitmapImage();
+            byte[] byteBuffer = Convert.FromBase64String(base64String);
+            using (MemoryStream memoryStream = new MemoryStream(byteBuffer))
+            {
+                memoryStream.Position = 0;
+
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memoryStream;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+            }
+
+            return bitmapImage;
+        }
+
+        private void SetupMapMenu(string mapPath)
+        {
+            if (HasMap)
+            {
+                MenuMap.Header = $"Map ({System.IO.Path.GetFileNameWithoutExtension(mapPath)})";
+                MenuMap.Visibility = Visibility.Visible;
+                MenuMap.Tag = mapPath;
+
+                if (HeatPoints.Count() > 0)
+                {
+                    MenuItem heat = new MenuItem()
+                    {
+                        Header = $"Create WiFi Heat Map: {HeatPoints.Count()} Points \u2248{(HeatPoints.Count() / 15) / 60} min.",
+                        Tag = mapPath
+                    };
+                    heat.Click += CreateHeatMap_Click;
+                    MenuMap.Items.Add(heat);
+                }
+
+                MenuItem save = new MenuItem()
+                {
+                    Header = "Save As",
+                    Tag = mapPath
+                };
+                save.Click += SaveMapFile_Click;
+                MenuMap.Items.Add(save);
+
+                MenuItem dxMM;
+                string dxPath = App.Settings.GetValue<string>("DXMobileMapPath", null);
+                if (dxPath == null)
+                {
+                    dxMM = new MenuItem()
+                    {
+                        Header = "Get DXMobileMap",
+                        Tag = mapPath
+                    };
+                    dxMM.Click += MapDBGetDxMobileMap_Click;
+                }
+                else
+                {
+                    dxMM = new MenuItem()
+                    {
+                        Header = "Create DXMobileMap Database",
+                        Tag = mapPath
+                    };
+                    dxMM.Click += MapDBCreateFile_Click;
+                }
+
+
+                MenuMap.Items.Add(dxMM);
+            }
+            else
+            {
+                MenuMap.Header = "Map";
+                MenuMap.Visibility = Visibility.Collapsed;
+                MenuMap.Tag = string.Empty;
+
+                MenuMap.Items.Clear();
+            }
+        }
+
+        private void CreateHeatMap_Click(object sender, RoutedEventArgs e)
+        {
+            Thread thread = new Thread(() => DrawWiFiHeatMap(8192, 8192));
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+
+        private void SaveMapFile_Click(object sender, RoutedEventArgs e)
+        {
+            SaveMapFile();
+        }
+        private bool SaveMapFile()
+        {
+            Microsoft.Win32.SaveFileDialog file = new Microsoft.Win32.SaveFileDialog
+            {
+                CheckFileExists = false,
+                CheckPathExists = true,
+                Filter = "Map file (*.map)|*.map",
+                FilterIndex = 1
+            };
+
+            string filePath;
+            if (file.ShowDialog() == true)
+            {
+                filePath = file.FileName;
+            }
+            else return false;
+
+            Map.MapFile.FileToContents();
+            Map.MapFile.FilePath = filePath;
+            Map.MapFile.ContentsToFile();
+
+            return true;
+        }
+        public void MapDBGetDxMobileMap_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(@"https://github.com/ZeroxCorbin/DxMobileMap_WPF");
+        }
+        public void MapDBCreateFile_Click(object sender, RoutedEventArgs e)
+        {
+            string dxPath = App.Settings.GetValue<string>("DXMobileMapPath", null);
+            if (dxPath == null)
+            {
+                UpdateStatus("Please select the DxMobileMap.exe directory in the Application Settings.");
+                return;
+            }
+
+
+            string dxDBPath = GetDXMobileMapDatabasePath(dxPath);
+            if (dxDBPath == null)
+            {
+                UpdateStatus("Please run DxMobileMap.exe once to allow it's application settings to be created. Then run this command again.");
+                return;
+            }
+
+            if (!SaveMapFile())
+                return;
+
+            string dbPath = $"{dxDBPath}\\{Map.MapFile.FileName}{MapDatabaseExtension}";
+
+            int i = 1;
+            while (File.Exists(dbPath))
+            {
+                dbPath = $"{dxDBPath}\\{Map.MapFile.FileName}_{i++}{MapDatabaseExtension}";
+                if (i > 200)
+                    return;
+            }
+
+            UpdateStatus($"Opening map database: {dbPath}");
+            using (SimpleDataBase mapDb = new SimpleDataBase().Init(dbPath, MapDatabaseTableName, true))
+            {
+                if (mapDb == null) return;
+
+                mapDb.SetValue(MapDatabaseFileKey, Map.MapFile);
+                mapDb.SetValue($"{Map.MapFile.LoadedUID}{MapDatabaseContentsDateKey}", Map.MapFile.FileLastUpdated);
+                mapDb.SetValue($"{Map.MapFile.LoadedUID}{MapDatabaseContentsHeaderKey}", Map.Header);
+
+                Map.MapFile.FileToContents();
+                mapDb.SetValue($"{Map.MapFile.LoadedUID}{MapDatabaseContentsKey}", Map.MapFile.Contents);
+                Map.MapFile.Contents = "";
+
+                string bmp = DrawMap(Map, 220, 220);
+                mapDb.SetValue($"{Map.MapFile.LoadedUID}_thumbnail", bmp);
+
+                if (Map.MapFile.LoggedStatus != null)
+                    if (Map.MapFile.LoggedStatus.Count > 0)
+                    {
+                        mapDb.SetValue($"{MapDatabasePositionsKey}", Map.MapFile.LoggedStatus);
+                        mapDb.SetValue("UseLoggedPositions", true);
+                    }
+
+                if (Map.MapFile.LoggedWifi != null)
+                    if (Map.MapFile.LoggedWifi.Count > 0)
+                    {
+                        mapDb.SetValue($"{MapDatabaseWifiKey}", Map.MapFile.LoggedWifi);
+                        mapDb.SetValue("UseLoggedWiFi", true);
+                    }
+
+                Map.MapFile.DatabasePath = dbPath;
+
+                UpdateStatus($"Launching DxMobileMap");
+                if (File.Exists($"{dxPath}\\DxMobileMap_WPF.exe"))
+                    Process.Start($"{dxPath}\\DxMobileMap_WPF.exe");
+
+                return;
+            }
+        }
+        private string GetDXMobileMapDatabasePath(string dxPath)
+        {
+            if (File.Exists(dxPath + "UserData\\ApplicationSettings.sqlite"))
+                using (SimpleDataBase dxDb = new SimpleDataBase().Init(dxPath + "UserData\\ApplicationSettings.sqlite", false))
+                {
+                    if (dxDb == null)
+                        return null;
+
+                    return dxDb.GetValue<string>("MapDatabaseDirectory", null);
+
+                }
+            else
+                return null;
+        }
+
+        private void Mdd_FileDownloaded(string filePath)
+        {
+            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) =>
+            {
+                WorkingPath = s + ".temp\\";
+                ZipFilePath = s;
+                AddToHistory(ZipFilePath);
+
+                Thread thread = new Thread(() => RunThread());
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+
+            }), filePath);
+        }
+        private void RtbLogLines_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            TextPointer txtP = rtbLogLines.CaretPosition.GetLineStartPosition(0).GetInsertionPosition(LogicalDirection.Forward);
+            int logLineNumber = -1;
+            bool found = false;
+            while (!found)
+            {
+                char[] text = new char[10];
+
+                if (txtP.GetTextInRun(LogicalDirection.Forward, text, 0, 10) > 0)
+                {
+                    foreach (char c in text)
+                        if (c.Equals('\t'))
+                        {
+                            found = true;
+                            break;
+                        }
+                    if (found)
+                    {
+                        string output = new string(text.TakeWhile(char.IsDigit).ToArray());
+                        int.TryParse(output, out logLineNumber);
+                        break;
+                    }
+
+                }
+                else
+                    return;
+
+                TextPointer txtP1 = txtP.GetLineStartPosition(-1, out int skipped).GetInsertionPosition(LogicalDirection.Forward);
+                if (skipped == -1)
+                    txtP = txtP1;
+                else
+                    return;
+            }
+
+            //int currentLineNumber;
+            //txtP.GetLineStartPosition(-int.MaxValue, out int lineMoved);
+            //currentLineNumber = -lineMoved;
+            bool found1 = false;
+            FileSearchResults res = null;
+            foreach (FileSearchResults res1 in LogDetails[LogIndices.log].SearchResults[0])
+                if (res1.LineNumber == logLineNumber)
+                {
+                    found1 = true;
+                    res = res1;
+                    break;
+                }
+            if (!found1) return;
+
+            TxtLogLinesPrev.Text = res.Buffer.GetHead();
+            for (int i = 0; i != 4; i++)
+                TxtLogLinesPrev.Text += res.Buffer.GetNext();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            rtbLogLines.SelectionChanged += RtbLogLines_SelectionChanged;
+
+            MenuItem men = new MenuItem()
+            {
+                Header = "Open Zip File"
+            };
+            men.Click += MenuOpenZipFile_Click;
+            MenuFile.Items.Add(men);
+
+            MenuItem menF = new MenuItem()
+            {
+                Header = "Open Folder"
+            };
+            menF.Click += MenuOpenFolder_Click;
+            MenuFile.Items.Add(menF);
+
+            MenuItem menR = new MenuItem()
+            {
+                Header = "Open From Robot"
+            };
+            menR.Click += MenuOpenFromRobot_Click;
+            MenuFile.Items.Add(menR);
+
+            Separator sep = new Separator()
+            {
+                Height = 3,
+                Width = double.NaN,
+                BorderThickness = new Thickness(1)
+            };
+            MenuFile.Items.Add(sep);
+
+            UpdateHistoryMenuItems(App.Settings.GetValue("FileHistory", new List<FileHistory>()));
+        }
+        private void Window_LocationChanged(object sender, EventArgs e)
+        {
+            if (FormLoading) return;
+            WindowSettings.Update(this.Top, this.Left, this.Width, this.Height, this.WindowState);
+        }
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (FormLoading) return;
+            WindowSettings.Update(this.Top, this.Left, this.Width, this.Height, this.WindowState);
+        }
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            App.Settings.SetValue("WindowSettings", WindowSettings);
         }
 
         private void Mf_FileOpened(string filePath)
@@ -1805,7 +2443,7 @@ namespace MobileDebug_WPF
 
             if ((bool)file.ShowDialog())
             {
-                WorkingPath = file.FileName + ".temp";
+                WorkingPath = file.FileName + ".temp\\";
                 ZipFilePath = file.FileName;
                 AddToHistory(ZipFilePath);
 
@@ -1814,26 +2452,85 @@ namespace MobileDebug_WPF
                 thread.Start();
             }
         }
+        private void MenuOpenFolder_Click(object sender, EventArgs e)
+        {
+            var fol = new System.Windows.Forms.FolderBrowserDialog
+            {
+                ShowNewFolderButton = false
+            };
+
+            if (fol.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                WorkingPath = fol.SelectedPath + "\\";
+                ZipFilePath = null;
+                AddToHistory(WorkingPath);
+
+                Thread thread = new Thread(() => RunThread());
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+            }
+        }
+        private void MenuOpenFromRobot_Click(object sender, RoutedEventArgs e)
+        {
+            MobileDebugDownload mdd = new MobileDebugDownload
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            mdd.FileDownloaded += Mdd_FileDownloaded;
+            mdd.Show();
+        }
+        private void MenuSettings_Search_Click(object sender, RoutedEventArgs e)
+        {
+            LogDetailsEditor win = new LogDetailsEditor
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this
+            };
+            win.Show();
+        }
+        private void MenuSettings_Application_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private class FileHistory
+        {
+            public string Path { get; set; }
+            public bool IsDirectory { get; set; } = false;
+        }
         private void AddToHistory(string filePath)
         {
-            List<string> history = App.Settings.GetValue("FileHistory", new List<string>());
+            List<FileHistory> history = App.Settings.GetValue("FileHistory", new List<FileHistory>());
 
+            FileHistory fhFile;
             if (!File.Exists(filePath) && !Directory.Exists(filePath))
             {
-                if (history.Contains(filePath))
-                    history.Remove(filePath);
+                IEnumerable<FileHistory> his = history.Where(s => s.Path.Equals(filePath));
+
+                foreach (FileHistory fh in history.ToList())
+                    history.Remove(fh);
             }
             else
             {
-                if (!history.Contains(filePath))
-                    history.Add(filePath);
+                fhFile = new FileHistory()
+                {
+                    Path = filePath,
+                };
+                if (File.Exists(filePath))
+                    fhFile.IsDirectory = false;
+                else
+                    fhFile.IsDirectory = true;
+
+                if (!history.Contains(fhFile))
+                    history.Add(fhFile);
             }
 
             App.Settings.SetValue("FileHistory", history);
 
             UpdateHistoryMenuItems(history);
         }
-        private void UpdateHistoryMenuItems(List<string> history)
+        private void UpdateHistoryMenuItems(List<FileHistory> history)
         {
             int i = MenuFile.Items.Count - 1;
 
@@ -1844,14 +2541,15 @@ namespace MobileDebug_WPF
                     mi.Click -= HistoryMenuItem_Click;
                     MenuFile.Items.Remove(mi);
                 }
+                else if (MenuFile.Items[i] is Separator)
+                    break;
             }
 
-
-            foreach (string filePath in history)
+            foreach (FileHistory filePath in history)
             {
                 MenuItem tsm = new MenuItem
                 {
-                    Header = System.IO.Path.GetFileName(filePath),
+                    Header = filePath.IsDirectory ? System.IO.Path.GetDirectoryName(filePath.Path) : System.IO.Path.GetFileName(filePath.Path),
                     Tag = filePath
                 };
                 tsm.Click += HistoryMenuItem_Click;
@@ -1862,24 +2560,18 @@ namespace MobileDebug_WPF
         {
             if (sender is MenuItem mi)
             {
-                if (mi.Tag is string filePath)
+                if (mi.Tag is FileHistory filePath)
                 {
-                    bool isFile = false;
-                    bool isDir = false;
-
-                    if (File.Exists(filePath)) isFile = true;
-                    if (Directory.Exists(filePath)) isDir = true;
-
-                    if (!isFile && !isDir)
+                    if (!filePath.IsDirectory)
                     {
-                        AddToHistory(filePath);
-                        return;
-                    }
+                        if (!File.Exists(filePath.Path))
+                        {
+                            AddToHistory(filePath.Path);
+                            return;
+                        }
 
-                    if (isFile)
-                    {
-                        WorkingPath = filePath + ".temp";
-                        ZipFilePath = filePath;
+                        WorkingPath = filePath.Path + ".temp\\";
+                        ZipFilePath = filePath.Path;
 
                         Thread thread = new Thread(() => RunThread());
                         thread.SetApartmentState(ApartmentState.STA);
@@ -1887,9 +2579,14 @@ namespace MobileDebug_WPF
                     }
                     else
                     {
-                        WorkingPath = filePath;
-                        ZipFilePath = null;
+                        if (!Directory.Exists(filePath.Path))
+                        {
+                            AddToHistory(filePath.Path);
+                            return;
+                        }
 
+                        WorkingPath = filePath.Path;
+                        ZipFilePath = null;
 
                         Thread thread = new Thread(() => RunThread());
                         thread.SetApartmentState(ApartmentState.STA);
@@ -1905,181 +2602,6 @@ namespace MobileDebug_WPF
         private void ExpSystemInfo_Collapsed(object sender, RoutedEventArgs e) => App.Settings.SetValue("ExpanderSystemInfo", ((Expander)sender).IsExpanded);
         private void ExpSystemInfo_Expanded(object sender, RoutedEventArgs e) => App.Settings.SetValue("ExpanderSystemInfo", ((Expander)sender).IsExpanded);
 
-
-
-        //private void DrawMap()
-        //{
-        //    System.Windows.Media.Pen blackPen = new Pen(Color.Black, 20);
-        //    Brush blackBrush = new SolidBrush(Color.Black);
-        //    Brush whiteBrush = new SolidBrush(Color.White);
-
-        //    if (picMapGraphics.Image != null) picMapGraphics.Image.Dispose();
-
-        //    MapGeometry.SetScaleF(panel1.Size.Width, panel1.Size.Height);
-        //    Bitmap bm = new Bitmap(MapGeometry.WidthScaled - 40, MapGeometry.HeightScaled - 40, PixelFormat.Format16bppRgb555);
-
-        //    using (Graphics g = Graphics.FromImage(bm))
-        //    {
-        //        picMapGraphics.Image = bm;
-        //        g.FillRectangle(whiteBrush, 0, 0, MapGeometry.WidthScaled, MapGeometry.HeightScaled);
-        //        g.TranslateTransform(-MapGeometry.WidthOffset, -MapGeometry.HeightOffset - MapGeometry.Height);
-        //        g.ScaleTransform(MapGeometry.scaleFactor.Width, -MapGeometry.scaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
-
-        //        foreach (MapGeometry.Line ln in MapGeometry.Lines)
-        //        {
-        //            g.DrawLine(blackPen, ln.Start, ln.End);
-        //        }
-        //        foreach (Point ln in MapGeometry.Points)
-        //        {
-        //            g.FillRectangle(blackBrush, ln.X, ln.Y, 20, 20);
-        //        }
-
-        //        DrawPositionsFromLog(g);
-        //    }
-        //    picMapGraphics.Refresh();
-        //}
-
-        //public class LogSearchResult
-        //{
-        //    public LogSearchResult(FileSearchResults r, Point p)
-        //    {
-        //        this.point = p;
-        //        this.searchResult = r;
-        //    }
-        //    public Point point;
-        //    public FileSearchResults searchResult;
-        //}
-
-        //public void AddLogSearchResult(FileSearchResults r, Point p)
-        //{
-        //    LogSearchResult rp = new LogSearchResult(r, p);
-        //    LogSearchResults.Add(rp);
-        //}
-
-        //public List<LogSearchResult> LogSearchResults { get; set; } = new List<LogSearchResult>();
-
-        //private void LoadPositionsFromLogs()
-        //{
-        //    LogDetails_Serializer.LogDetailsLog log = new LogDetails_Serializer.LogDetailsLog();
-        //    log.MultiLog = true;
-        //    log.isLD = true;
-        //    log.FileName = "log";
-        //    log.FilePath = "\\var\\robot\\logs\\";
-
-        //    LogDetails_Serializer.LogDetailsLogSearch ser = new LogDetails_Serializer.LogDetailsLogSearch();
-        //    ser.DisplayName = "Log";
-        //    ser.isLD = true;
-        //    ser.Level = "WARN";
-        //    ser.RegEx2Match = "Robot at";
-
-        //    log.Search = new LogDetails_Serializer.LogDetailsLogSearch[1];
-        //    log.Search[0] = ser;
-        //    LogIndices ind;
-
-        //    IList<FileInfo> lst = new List<FileInfo>();
-
-        //    if (log.MultiLog)
-        //    {
-        //        DirectoryInfo dir = new DirectoryInfo(WorkingPath + log.FilePath);
-
-        //        IEnumerable<FileInfo> names = dir.GetFiles().OrderByDescending(f => f.LastWriteTime.Year <= 1601 ? f.CreationTime : f.LastWriteTime);
-
-        //        IEnumerable<FileInfo> res =
-        //            from test in names
-        //            where test.Name.StartsWith(log.FileName)
-        //            select test;
-
-        //        lst = res.ToList<FileInfo>();
-        //    }
-
-        //    StringBuilder sb = new StringBuilder();
-        //    sb.Append(rtfHead);
-
-        //    int i = 0;
-        //    foreach (FileInfo file in lst)
-        //    {
-        //        UpdateStatus("Processing log for (Robot at): " + file.Name);
-
-        //        IEnumerable<FileSearchResults> searchRes = Enumerable.Empty<FileSearchResults>();
-
-        //        LogDetails ld = new LogDetails();
-        //        ld.Log = log;
-
-        //        searchRes = FileSearch.FileSearch.Find(file.FullName, ser.RegEx2Match);
-
-        //        ld.LogFileFullName = file.FullName;
-        //        positionLogDetails.Add(ld);
-        //        ind.log = i;
-        //        ind.search = 0;
-
-        //        int ii = -1;
-        //        foreach (FileSearchResults dat in searchRes)
-        //        {
-        //            //Tue Oct  3 08:11:30.049143 Robot at 1779 45640 164.0
-        //            ii++;
-
-        //            if (dat.Line.Contains("mm/sec")) continue;
-
-        //            //DateTime time;
-        //            string[] spl = dat.Line.Split(' ');
-
-        //            int xVal;
-        //            int yVal;
-        //            if (spl[3].Length == 1)
-        //            {
-        //                //time = DateTime.ParseExact(spl[1] + ' ' + spl[3] + " 2018 " + spl[4].Remove(spl[4].LastIndexOf('.')), "MMM d yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-        //                xVal = Convert.ToInt32(spl[7].TrimEnd(','));
-        //                yVal = Convert.ToInt32(spl[8].TrimEnd(','));
-        //            }
-
-        //            else
-        //            {
-        //                //time = DateTime.ParseExact(spl[1] + ' ' + spl[2] + " 2018 " + spl[3].Remove(spl[3].LastIndexOf('.')), "MMM d yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-        //                xVal = Convert.ToInt32(spl[6].TrimEnd(','));
-        //                yVal = Convert.ToInt32(spl[7].TrimEnd(','));
-        //            }
-
-
-        //            if (MapGeometry.Contains(xVal, yVal))
-        //            {
-        //                AddLogSearchResult(dat, new Point(xVal, yVal));
-        //            }
-        //            else
-        //            {
-        //                Point p = MapGeometry.OffsetTo(new Point(xVal, yVal));
-        //                sb.AppendLine(dat.LineNumber.ToString() + "\\tab " + dat.Line + " - " + rtfSearchFormatsColors[3] + "Offset: " + p.X.ToString() + " " + p.Y.ToString() + rtfSearchFormatsColorsTail + "\\v log?" + ind.log.ToString("00") + "\\v0" + "\\par");
-        //            }
-        //        }
-
-        //        i++;
-        //    }
-        //    sb.Append(rtfTail);
-
-        //    rtbMapGLostPositions.Rtf = sb.ToString();
-
-        //    tslMapGPosOnMap.Text = LogSearchResults.Count.ToString();
-        //    tslMapGPosOffMap.Text = rtbMapGLostPositions.Lines.Count<string>().ToString();
-        //}
-
-        //private void DrawPositionsFromLog(Graphics g)
-        //{
-        //    if (LogSearchResults.Count <= 0) return;
-
-        //    Brush redBrush = new SolidBrush(Color.Red);
-
-        //    int sz = (int)(40.0 * (1 + Math.Abs((MapGeometry.scaleFactor.Width - 1.0))));
-
-        //    IList<LinkLabel> links = new List<LinkLabel>();
-        //    foreach (LogSearchResult p in LogSearchResults)
-        //    {
-        //        Rectangle r = new Rectangle(MapGeometry.WidthOffset, MapGeometry.HeightOffset, MapGeometry.Width, MapGeometry.Height);
-        //        if (r.Contains(p.point))
-        //        {
-
-        //            g.FillRectangle(redBrush, p.point.X, p.point.Y, sz, sz);
-        //        }
-        //    }
-        //}
 
         //private void rtbMapGLostPositions_MouseDoubleClick(object sender, MouseEventArgs e)
         //{
@@ -2105,16 +2627,6 @@ namespace MobileDebug_WPF
 
         //}
 
-        //bool MapLoaded = false;
-        //private void panel1_SizeChanged(object sender, EventArgs e)
-        //{
-
-
-        //    if (MapGeometry == null) return;
-        //    if (!MapLoaded) return;
-
-        //    DrawMap();
-        //}
 
     }
 }

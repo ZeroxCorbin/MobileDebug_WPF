@@ -325,7 +325,7 @@ namespace MobileDebug_WPF
             //LogDetails_Serializer.LogDetails sLog = LogDetails_Serializer.Load($"{SearchConfigurationPath}LogDetails.xml");
             //if (sLog.GetHashCode().Equals(Serial.GetHashCode())) return;
 
-            if(MessageBox.Show("Would you like to save the changes?", "Save Changes?", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+            if (UserMessage.Show(this, "Would you like to save the changes?", "Save Changes?", new List<string>(){ "Ok","Cancel"}) == "Ok")
             {
                 File.Copy($"{SearchConfigurationPath}LogDetails.xml", $"{SearchConfigurationPath}LogDetails_{DateTime.Now.ToOADate().ToString()}.xml");
                 LogDetails_Serializer.Save($"{SearchConfigurationPath}LogDetails.xml", Serial);
