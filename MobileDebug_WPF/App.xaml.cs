@@ -7,61 +7,22 @@ namespace MobileDebug_WPF
 {
     public partial class App : Application
     {
-        public class ConsoleWriterEventArgs : EventArgs
-        {
-            public string Value { get; private set; }
-            public ConsoleWriterEventArgs(string value)
-            {
-                Value = value;
-            }
-        }
-
-        public class ConsoleWriter : TextWriter
-        {
-            public override Encoding Encoding { get { return Encoding.UTF8; } }
-
-            public override void Write(string value)
-            {
-                WriteEvent?.Invoke(this, new ConsoleWriterEventArgs(value));
-                base.Write(value);
-            }
-
-            public override void WriteLine(string value)
-            {
-                WriteLineEvent?.Invoke(this, new ConsoleWriterEventArgs(value));
-                base.WriteLine(value);
-            }
-
-            public event EventHandler<ConsoleWriterEventArgs> WriteEvent;
-            public event EventHandler<ConsoleWriterEventArgs> WriteLineEvent;
-        }
-
         public static SimpleDataBase Settings;
         public static string AppRootDirectory => System.AppDomain.CurrentDomain.BaseDirectory;
         public static string UserDataDirectory => System.AppDomain.CurrentDomain.BaseDirectory + "UserData\\";
-#if !DEBUG
-        public static TextWriter ConsoleOut;
-#endif
-        //MainWindow MainWindow;
+
         protected override void OnStartup(StartupEventArgs e)
         {
-            //DxMobileMap.Resources.AddResourceItem.Extract();
             base.OnStartup(e);
-        }
-        public App()
-        {
-            //var consoleWriter = new ConsoleWriter();
-            //consoleWriter.WriteEvent += ConsoleWriter_WriteEvent; ;
-            //consoleWriter.WriteLineEvent += ConsoleWriter_WriteLineEvent; ;
 
-            //Console.SetOut(consoleWriter);
+            FileStream filestream = new FileStream(UserDataDirectory + "log.txt", FileMode.Append);
+            var streamwriter = new StreamWriter(filestream)
+            {
+                AutoFlush = true
+            };
+            Console.SetOut(streamwriter);
+            Console.SetError(streamwriter);
 
-#if DEBUG
-            Console.SetOut(new StreamWriter(Console.OpenStandardOutput()));
-#else
-            ConsoleOut = new StreamWriter("log.txt");
-            Console.SetOut(ConsoleOut);
-#endif
             if (!Directory.Exists(UserDataDirectory))
             {
                 Console.WriteLine($"Creating directory: {UserDataDirectory}");
@@ -78,32 +39,9 @@ namespace MobileDebug_WPF
                 Console.WriteLine("Application settings loaded.");
             }
         }
-
-        private void ConsoleWriter_WriteLineEvent(object sender, ConsoleWriterEventArgs e)
+        public App()
         {
-            //this.Dispatcher.Invoke(new Action(delegate
-            //{
-            //    if (MainWindow != null)
-            //    {
-            //        if (MainWindow.IsActive)
-            //        {
-            //            ((MainWindow)MainWindow).UpdateMapLoad(e.Value);
-            //        }
-            //    }
-            //}
-            //));
 
-        }
-
-        private void ConsoleWriter_WriteEvent(object sender, ConsoleWriterEventArgs e)
-        {
-            if (MainWindow != null)
-            {
-                if (MainWindow.IsActive)
-                {
-                    //((MainWindow)MainWindow).UpdateMapLoad(e.Value);
-                }
-            }
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -113,9 +51,6 @@ namespace MobileDebug_WPF
             base.OnExit(e);
 
             Settings.Dispose();
-#if !DEBUG
-            ConsoleOut.Close();
-#endif
         }
     }
 }

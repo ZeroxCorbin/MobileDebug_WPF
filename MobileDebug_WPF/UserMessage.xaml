@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MobileDebug_WPF"
         mc:Ignorable="d"
-        Title="UserMessage" Height="137.037" Width="275" Loaded="Window_Loaded" Activated="Window_Activated">
+        Title="UserMessage" Height="137.037" Width="275" Loaded="Window_Loaded" Activated="Window_Activated" Icon="Resources/favicon.png">
 <Grid>
         <Grid Margin="0,0,0,36">
             <TextBlock x:Name="TxtMessage" HorizontalAlignment="Left" Margin="10,10,0,0" Text="TextBlock" VerticalAlignment="Top"/>

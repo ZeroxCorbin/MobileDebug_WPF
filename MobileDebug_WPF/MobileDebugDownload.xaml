@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MobileDebug_WPF"
         mc:Ignorable="d"
-        Title="Download Debug Log" Height="152.8" Width="259.471" >
+        Title="Download Debug Log" Height="152.8" Width="259.471" Icon="Resources/favicon.png" >
     <Grid>
 
 

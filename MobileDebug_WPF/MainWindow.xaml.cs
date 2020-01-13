@@ -139,6 +139,7 @@ namespace MobileDebug_WPF
 
             CheckForSearchConfigFiles();
 
+            CheckDxMobileMapPath();
 
             MenuItem mi = new MenuItem()
             {
@@ -151,6 +152,7 @@ namespace MobileDebug_WPF
             ExpTOC.IsExpanded = App.Settings.GetValue("ExpanderTOC", false);
             ExpSystemInfo.IsExpanded = App.Settings.GetValue("ExpanderSystemInfo", false);
 
+            tabCrashLogs.Visibility = Visibility.Collapsed;
             tabBatteryLogs.Visibility = Visibility.Collapsed;
             tabWiFiLogs.Visibility = Visibility.Collapsed;
             tabMapContents.Visibility = Visibility.Collapsed;
@@ -159,6 +161,34 @@ namespace MobileDebug_WPF
             tabMapWiFiHeat.Visibility = Visibility.Collapsed;
 
             FormLoading = false;
+        }
+
+        private bool CheckDxMobileMapPath()
+        {
+            string path = App.Settings.GetValue("DxMobileMapPath");
+            if (!string.IsNullOrEmpty(path))
+            {
+                if (!File.Exists($"{path}DxMobileMap_WPF.exe"))
+                    path = string.Empty;
+                else
+                    return true;
+            }
+            if (string.IsNullOrEmpty(path))
+            {
+                string temp = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppPath, @"..\..\..\..\DxMobileMap_WPF\DxMobileMap_WPF\bin\x64\Local Release\DxMobileMap_WPF.exe"));
+                if (File.Exists(temp))
+                    path = System.IO.Path.GetDirectoryName(temp);
+
+                temp = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppPath, @"..\DxMobileMap_WPF\DxMobileMap_WPF.exe"));
+                if (File.Exists(temp))
+                    path = System.IO.Path.GetDirectoryName(temp);
+            }
+            App.Settings.SetValue("DxMobileMapPath", path);
+
+            if (string.IsNullOrEmpty(path))
+                return false;
+            else
+                return true;
         }
 
         private void CheckForSearchConfigFiles()
@@ -184,10 +214,13 @@ namespace MobileDebug_WPF
 
         private void InvokeThis(Action act)
         {
+            Console.WriteLine("Invoke: " + act.Method.Name);
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, act);
         }
         private void RunThread()
         {
+            InvokeThis(new Action(() => { MenuFile.IsEnabled = false; }));
+
             InvokeThis(new Action(() => { ClearForm(true); }));
 
             if (!string.IsNullOrEmpty(ZipFilePath))
@@ -206,76 +239,38 @@ namespace MobileDebug_WPF
                 return;
             }
 
-            try
-            {
-                UpdateStatus("Loading system data...");
-                InvokeThis(new Action(() => { LoadSystemHealth(); }));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            UpdateStatus("Loading system data...");
+            InvokeThis(new Action(() => { LoadSystemHealth(); }));
 
-            try
-            {
-                InvokeThis(new Action(() => { LoadSystemDetails(); }));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            InvokeThis(new Action(() => { LoadSystemDetails(); }));
 
-            try
-            {
-                InvokeThis(new Action(() => { LoadSystemApps(); }));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            InvokeThis(new Action(() => { LoadSystemApps(); }));
 
-            try
-            {
-                UpdateStatus("Loading Table of Contents...");
-                InvokeThis(new Action(() => { ReadTOC(); }));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            UpdateStatus("Loading Table of Contents...");
+            InvokeThis(new Action(() => { ReadTOC(); }));
 
             UpdateStatus("Setting up log searches...");
             InvokeThis(new Action(() => { SetupLogs(); }));
+
+            UpdateStatus("Setting up crash logs...");
+            InvokeThis(new Action(() => { SetupCrashLogs(); }));
 
             if (!IsEM)
             {
                 InvokeThis(new Action(() => { tabBatteryLogs.Visibility = Visibility.Visible; }));
 
-                try
-                {
-                    UpdateStatus("Setting up battery graphs...");
-                    InvokeThis(new Action(() => { LoadBatteryLogs(); }));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                UpdateStatus("Setting up battery graphs...");
+                InvokeThis(new Action(() => { LoadBatteryLogs(); }));
             }
 
             if (!IsEM)
             {
                 InvokeThis(new Action(() => { tabWiFiLogs.Visibility = Visibility.Visible; }));
-                try
+
+                if (!IsEM)
                 {
-                    if (!IsEM)
-                    {
-                        UpdateStatus("Setting up WiFi graphs...");
-                        InvokeThis(new Action(() => { LoadWiFiLogs(); }));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
+                    UpdateStatus("Setting up WiFi graphs...");
+                    InvokeThis(new Action(() => { LoadWiFiLogs(); }));
                 }
             }
 
@@ -299,10 +294,7 @@ namespace MobileDebug_WPF
 
                     string bmp = DrawMap(Map, 4096, 4096);
 
-                    Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { ImgMapBorder.Child = new Image() { Source = Base64StringToBitmap(s) }; tabMapImage.Visibility = Visibility.Visible; }), bmp);
-
-                    UpdateStatus("Completed!");
-
+                    Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { DrawMapApplyToImage(s); }), bmp);
 
                     break;
                 }
@@ -313,6 +305,7 @@ namespace MobileDebug_WPF
             if (HasMap)
                 if (Map.MapFile.LoggedWifi != null)
                 {
+                    UpdateStatus("Building WiFi Heatmap points...");
                     System.Drawing.Rectangle r = new System.Drawing.Rectangle(Map.Header.WidthOffset, Map.Header.HeightOffset, Map.Header.Width, Map.Header.Height);
 
                     foreach (WifiLogs.WifiLogData s in Map.MapFile.LoggedWifi)
@@ -327,9 +320,9 @@ namespace MobileDebug_WPF
 
                             int i = 0;
                             bool found = false;
-                            foreach(HeatPoint hp in HeatPoints.ToArray())
+                            foreach (HeatPoint hp in HeatPoints.ToArray())
                             {
-                                if(new System.Drawing.Rectangle(hp.X, hp.Y, 500, 500).Contains(s.Position))
+                                if (new System.Drawing.Rectangle(hp.X, hp.Y, 500, 500).Contains(s.Position))
                                 {
                                     HeatPoints[i] = new HeatPoint(hp.Point, (byte)((hp.Intensity + Math.Abs(s.Baud)) / 2));
                                     found = true;
@@ -342,17 +335,27 @@ namespace MobileDebug_WPF
                                 HeatPoints.Add(new HeatPoint(s.Position, (byte)Math.Abs(s.Baud)));
                             }
                         }
-                            
+
                     }
                 }
 
+            UpdateStatus("Setting up Map menu...");
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { SetupMapMenu(s); }), mapPath);
+
+            InvokeThis(new Action(() => { MenuFile.IsEnabled = true; }));
+            UpdateStatus("Complete!");
         }
 
 
         private void UpdateStatus(string msg)
         {
-            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { lblStatus.Content = s; }), msg);
+            Console.WriteLine(msg);
+
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) =>
+            {
+                
+                LstStatusList.Items.Insert(0, s);
+            }), msg);
             //Thread.Sleep(1);
         }
 
@@ -402,38 +405,63 @@ namespace MobileDebug_WPF
 
         private void ClearForm(bool removeOldFiles)
         {
-            tabBatteryLogs.Visibility = Visibility.Collapsed;
-            tabWiFiLogs.Visibility = Visibility.Collapsed;
-            tabMapContents.Visibility = Visibility.Collapsed;
-            tabMapContentsRaw.Visibility = Visibility.Collapsed;
-            tabMapImage.Visibility = Visibility.Collapsed;
-            tabMapWiFiHeat.Visibility = Visibility.Collapsed;
-
-            HeatPoints.Clear();
-            ImgMapWiFiHeatBorder.Child = null;
-            ImgMapBorder.Child = null;
-
-            MenuMap.Header = "Map";
-            MenuMap.Visibility = Visibility.Collapsed;
-            MenuMap.Tag = string.Empty;
-
-            MenuMap.Items.Clear();
-
-            flpLogs.Children.Clear();
-            flpWiFiLogs.Children.Clear();
-            flpBatteryLogs.Children.Clear();
+            TvSystemData.Items.Clear();
 
             stkTOC.Children.Clear();
 
-            TvSystemData.Items.Clear();
-            TvMapContents.Items.Clear();
-
+            flpLogs.Children.Clear();
             rtbLogLines.Document.Blocks.Clear();
-
             TxtLogLinesPrev.Text = string.Empty;
-
             LogDetails = new List<LogDetails_class>();
             LogIndices = new LogIndices();
+
+            tabCrashLogs.Visibility = Visibility.Collapsed;
+            flpCrashLogs.Children.Clear();
+            TxtCrashLogLines.Text = string.Empty;
+
+            tabBatteryLogs.Visibility = Visibility.Collapsed;
+            flpBatteryLogs.Children.Clear();
+            LblPlotBatteryVoltageTitle.Content = string.Empty;
+            BtnSaveBatteryVoltageGraphImage.Visibility = Visibility.Collapsed;
+            LblPlotBatteryChargeStateTitle.Content = string.Empty;
+            BtnSaveBatteryChargeStateGraphImage.Visibility = Visibility.Collapsed;
+            BtnBatteryLogsViewAll.Background = ButtonFace;
+            Chart_BatteryChargeState.Model = null;
+            Chart_BatteryVoltage.Model = null;
+            foreach (Control c in flpBatteryLogs.Children)
+                if (typeof(Button) == c.GetType())
+                    c.Background = ButtonFace;
+
+            tabWiFiLogs.Visibility = Visibility.Collapsed;
+            flpWiFiLogs.Children.Clear();
+            LblWiFiPlotDecibelsTitle.Content = string.Empty;
+            BtnSaveWiFiDecibelsGraphImage.Visibility = Visibility.Collapsed;
+            LblWiFiPlotBaudTitle.Content = string.Empty;
+            BtnSaveWiFiBaudGraphImage.Visibility = Visibility.Collapsed;
+            BtnWiFiLogsViewAll.Background = ButtonFace;
+            Chart_WiFiBaud.Model = null;
+            Chart_WiFiDecibels.Model = null;
+            foreach (Control c in flpWiFiLogs.Children)
+                if (typeof(Button) == c.GetType())
+                    c.Background = ButtonFace;
+
+            tabMapContents.Visibility = Visibility.Collapsed;
+            TvMapContents.Items.Clear();
+
+            tabMapContentsRaw.Visibility = Visibility.Collapsed;
+            rtbMap.Document.Blocks.Clear();
+
+            tabMapImage.Visibility = Visibility.Collapsed;
+            ImgMapBorder.Child = null;
+
+            tabMapWiFiHeat.Visibility = Visibility.Collapsed;
+            ImgMapWiFiHeatBorder.Child = null;
+            HeatPoints.Clear();
+
+            MenuMap.Visibility = Visibility.Collapsed;
+            MenuMap.Header = "Map";
+            MenuMap.Tag = string.Empty;
+            MenuMap.Items.Clear();
 
             IsEM = false;
 
@@ -499,69 +527,6 @@ namespace MobileDebug_WPF
             }
 
         }
-
-        //private void CreateZipFile()
-        //{
-        //    if (!string.IsNullOrEmpty(ZipFilePath))
-        //    {
-        //        SaveFileDialog sfd = new SaveFileDialog();
-        //        sfd.FileName = Path.GetFileName(ZipFilePath);// zipFileFullName.Substring(zipFileFullName.LastIndexOf('\\') + 1);
-        //        sfd.Filter = "Zip file (*.zip)|*.zip";
-        //        sfd.InitialDirectory = ZipFilePath.Substring(0, ZipFilePath.LastIndexOf('\\'));
-
-        //        if (sfd.ShowDialog() == DialogResult.OK)
-        //        {
-        //            File.Copy(ZipFilePath, sfd.FileName, true);
-        //        }
-        //    }
-        //    else if (!string.IsNullOrEmpty(WorkingPath))
-        //    {
-        //        SaveFileDialog sfd = new SaveFileDialog();
-        //        sfd.FileName = WorkingPath.Substring(WorkingPath.LastIndexOf('\\') + 1);
-        //        sfd.Filter = "Zip file (*.zip)|*.zip";
-        //        sfd.InitialDirectory = WorkingPath.Substring(0, WorkingPath.LastIndexOf('\\'));
-
-        //        if (sfd.ShowDialog() == DialogResult.OK)
-        //        {
-        //            if (File.Exists(sfd.FileName)) File.Delete(sfd.FileName);
-
-        //            ZipFile.CreateFromDirectory(WorkingPath, sfd.FileName);
-        //        }
-        //    }
-        //}
-
-
-        //private void LoadSubbmittedDetails()
-        //{
-        //    SubmittedDetails_Serializer.SubmittedDetails serial = SubmittedDetails_Serializer.Load("Config\\SubmittedDetails.xml");
-
-        //    TreeNode tn = new TreeNode();
-        //    tn.NodeFont = new Font(this.Font, FontStyle.Bold);
-        //    trvSystemData.Items.Add(tn);
-        //    tn.Text = serial.Title;
-
-        //    DirectoryInfo di = new DirectoryInfo(WorkingPath);
-
-        //    foreach (FileInfo fi in di.GetFiles())
-        //    {
-        //        if (fi.Name.Contains(serial.Keyword))
-        //        {
-        //            submittedDetailsFullName = fi.FullName;
-        //            using (StreamReader sr = new StreamReader(fi.FullName))
-        //            {
-        //                string line;
-        //                while ((line = sr.ReadLine()) != null)
-        //                {
-        //                    if (string.IsNullOrEmpty(line)) continue;
-        //                    TreeNode tn1 = new TreeNode();
-        //                    tn.Nodes.Add(tn1);
-        //                    tn1.Text = line;
-        //                }
-        //            }
-        //        }
-        //    }
-        //    tn.Expand();
-        //}
 
         private void CheckProductType()
         {
@@ -1013,6 +978,65 @@ namespace MobileDebug_WPF
 
         //WiFi TAB
 
+        private void SetupCrashLogs()
+        {
+            DirectoryInfo dir = new DirectoryInfo(WorkingPath + @"\var\robot\logs\");
+            IEnumerable<FileInfo> names = dir.GetFiles().OrderByDescending(f => f.LastWriteTime.Year <= 1601 ? f.CreationTime : f.LastWriteTime);
+            IEnumerable<FileInfo> res =
+                from test in names
+                where test.Name.StartsWith("crash")
+                select test;
+            IList<FileInfo> lst = res.ToList<FileInfo>();
+
+            foreach (FileInfo file in lst)
+            {
+
+                Hyperlink hl = new Hyperlink()
+                {
+                    Tag = file.FullName,
+                };
+                hl.Inlines.Add(System.IO.Path.GetFileName(file.FullName));
+                hl.Click += CrashLogHyperLink_Click;
+
+                Label lb = new Label
+                {
+                    Tag = file.FullName,
+                    Content = hl
+                };
+                flpCrashLogs.Children.Add(lb);
+
+                Button but = new Button
+                {
+                    Tag = file.FullName,
+                    Content = System.IO.Path.GetFileNameWithoutExtension(file.FullName),
+                    Margin = new Thickness(3),
+                    MinWidth = 74
+                };
+                but.Click += CrashLogButton_Click;
+
+                flpCrashLogs.Children.Add(but);
+
+                tabCrashLogs.Visibility = Visibility.Visible;
+            }
+        }
+        private void CrashLogHyperLink_Click(object sender, RoutedEventArgs e)
+        {
+            if (((Hyperlink)sender).Tag is string path)
+                System.Diagnostics.Process.Start(path);
+        }
+        private void CrashLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (Control c in flpCrashLogs.Children)
+                if (typeof(Button) == c.GetType())
+                    c.Background = ButtonFace;
+
+            Button btn = (Button)sender;
+            string filePath = (string)btn.Tag;
+            btn.Background = Brushes.LightGreen;
+
+            TxtCrashLogLines.Text = File.ReadAllText(filePath);
+        }
+
         private void LoadWiFiLogs()
         {
             IList<FileInfo> lst = new List<FileInfo>();
@@ -1058,6 +1082,7 @@ namespace MobileDebug_WPF
         }
         private void WiFiLogButton_Click(object sender, RoutedEventArgs e)
         {
+            BtnWiFiLogsViewAll.Background = ButtonFace;
             foreach (Control c in flpWiFiLogs.Children)
                 if (typeof(Button) == c.GetType())
                     c.Background = ButtonFace;
@@ -1073,27 +1098,74 @@ namespace MobileDebug_WPF
             {
                 using (FileStream decompressFileStream = new FileInfo(oldFileName).OpenRead())
                 {
-                    newFileName = oldFileName.TrimEnd(".gz".ToCharArray());
-
+                    newFileName = oldFileName.TrimEnd(".gz".ToCharArray()) + DateTime.Now.Ticks.ToString();
                     using (FileStream decompressedFileStream = File.Create(newFileName))
-                    {
-                        using (GZipStream gz = new GZipStream(decompressFileStream, CompressionMode.Decompress))
-                        {
-                            gz.CopyTo(decompressedFileStream);
-                        }
-                    }
+                    using (GZipStream gz = new GZipStream(decompressFileStream, CompressionMode.Decompress))
+                        gz.CopyTo(decompressedFileStream);
                 }
                 removeFile = true;
             }
 
-            WifiLogs log = new WifiLogs(newFileName);
+            WifiLogs wifiLog = new WifiLogs(newFileName);
 
-            if (removeFile) File.Delete(newFileName);
+            WiFiLogsDisplayPlot(new List<WifiLogs>() { wifiLog });
+
+            btn.Content = $"View ({wifiLog.Results.Count()})";
+            if (removeFile)
+                File.Delete(newFileName);
+        }
+        private void BtnWiFiLogsViewAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (Control c in flpWiFiLogs.Children)
+                if (typeof(Button) == c.GetType())
+                    c.Background = ButtonFace;
+
+            Button btn = (Button)sender;
+            btn.Background = Brushes.LightGreen;
+
+            DirectoryInfo dir = new DirectoryInfo(WorkingPath + "var\\log\\");
+
+            IEnumerable<FileInfo> names = dir.GetFiles().OrderByDescending(f => f.LastWriteTime.Year <= 1601 ? f.CreationTime : f.LastWriteTime);
+
+            IEnumerable<FileInfo> res =
+                from test in names
+                where test.Name.StartsWith("wifiLog")
+                select test;
+
+            List<WifiLogs> wifiLogs = new List<WifiLogs>();
+            foreach (FileInfo file in res)
+            {
+                string oldFileName = file.FullName;
+                string newFileName = oldFileName;
+                bool removeFile = false;
+
+                if (oldFileName.EndsWith(".gz"))
+                {
+                    using (FileStream decompressFileStream = new FileInfo(oldFileName).OpenRead())
+                    {
+                        newFileName = oldFileName.TrimEnd(".gz".ToCharArray()) + DateTime.Now.Ticks.ToString();
+                        using (FileStream decompressedFileStream = File.Create(newFileName))
+                        using (GZipStream gz = new GZipStream(decompressFileStream, CompressionMode.Decompress))
+                            gz.CopyTo(decompressedFileStream);
+                    }
+                    removeFile = true;
+                }
+                wifiLogs.Add(new WifiLogs(newFileName));
+
+                if (removeFile)
+                    File.Delete(newFileName);
+            }
+
+            WiFiLogsDisplayPlot(wifiLogs);
+        }
+        private void WiFiLogsDisplayPlot(List<WifiLogs> wifiLogs)
+        {
+            BtnSaveWiFiDecibelsGraphImage.Visibility = Visibility.Visible;
+            LblWiFiPlotDecibelsTitle.Content = "WiFi Decibels (Signal Strength)";
 
             PlotModel wiFiDecibelsPlotModel = new PlotModel
             {
-                Title = "WiFi Decibels (Signal Strength)",
-                TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinPlotArea,
+                Title = string.Empty,
                 LegendTitle = "SSID Names",
                 LegendOrientation = LegendOrientation.Vertical,
                 LegendPlacement = LegendPlacement.Outside,
@@ -1118,10 +1190,13 @@ namespace MobileDebug_WPF
 
             Chart_WiFiDecibels.Model = wiFiDecibelsPlotModel;
 
+
+            BtnSaveWiFiBaudGraphImage.Visibility = Visibility.Visible;
+            LblWiFiPlotBaudTitle.Content = "WiFi Baud Rate (Speed)";
+
             PlotModel wiFiBaudPlotModel = new PlotModel
             {
-                Title = "WiFi Baud Rate (Speed)",
-                TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinPlotArea,
+                Title = string.Empty,
                 LegendTitle = "SSID Names",
                 LegendOrientation = LegendOrientation.Vertical,
                 LegendPlacement = LegendPlacement.Outside,
@@ -1145,32 +1220,42 @@ namespace MobileDebug_WPF
 
             Chart_WiFiBaud.Model = wiFiBaudPlotModel;
 
-            DateTime dt = DateTime.Now;
-            foreach (IList<WifiLogs.WifiLogData> ssid in log.Results)
+            Dictionary<string, List<WifiLogs.WifiLogData>> ssidDict = new Dictionary<string, List<WifiLogs.WifiLogData>>();
+            foreach (WifiLogs log in wifiLogs)
             {
-                IEnumerable<WifiLogs.WifiLogData> ssidSorted = from s in ssid
-                                                               orderby s.Time
-                                                               select s;
+
+                foreach (KeyValuePair<string, int> ssid in log.SSID)
+                {
+                    if (ssidDict.ContainsKey(ssid.Key))
+                        ssidDict[ssid.Key].AddRange(log.Results[ssid.Value - 1]);
+                    else
+                        ssidDict.Add(ssid.Key, log.Results[ssid.Value - 1]);
+                }
+            }
+            foreach (KeyValuePair<string, List<WifiLogs.WifiLogData>> dict in ssidDict)
+            {
                 LineSeries wiFiBaudLineSeries = new LineSeries
                 {
                     StrokeThickness = 1,
-                    Title = ssid[0].SSID,
+                    Title = dict.Key,
                 };
                 wiFiBaudPlotModel.Series.Add(wiFiBaudLineSeries);
 
                 LineSeries wiFiDecibelsLineSeries = new LineSeries
                 {
                     StrokeThickness = 1,
-                    Title = ssid[0].SSID,
+                    Title = dict.Key,
                 };
                 wiFiDecibelsPlotModel.Series.Add(wiFiDecibelsLineSeries);
 
-                foreach (WifiLogs.WifiLogData dat in ssid)
-                {
-                    dt = dat.Time;
-                    wiFiDecibelsLineSeries.Points.Add(new DataPoint(dat.Time.ToOADate(), dat.Decibels));
-                    wiFiBaudLineSeries.Points.Add(new DataPoint(dat.Time.ToOADate(), dat.Baud));
-                }
+                    IEnumerable<WifiLogs.WifiLogData> ssidSorted = from s in dict.Value
+                                                                   orderby s.Time
+                                                                   select s;
+                    foreach (WifiLogs.WifiLogData dat in ssidSorted)
+                    {
+                        wiFiDecibelsLineSeries.Points.Add(new DataPoint(dat.Time.ToOADate(), dat.Decibels));
+                        wiFiBaudLineSeries.Points.Add(new DataPoint(dat.Time.ToOADate(), dat.Baud));
+                    }
 
             }
             Chart_WiFiDecibels.InvalidatePlot(true);
@@ -1196,9 +1281,7 @@ namespace MobileDebug_WPF
                 where test.Name.StartsWith("log_")
                 select test;
 
-            IList<FileInfo> lst = res.ToList<FileInfo>();
-
-            foreach (FileInfo file in lst)
+            foreach (FileInfo file in res)
             {
                 //UpdateStatus("Processing log for ([0-9] Voltage is): " + file.Name);
 
@@ -1231,7 +1314,7 @@ namespace MobileDebug_WPF
                 }
             }
         }
-        private void BatteryLogsButton_Click(object sender, RoutedEventArgs e)
+        private void BtnBatteryLogsViewAll_Click(object sender, RoutedEventArgs e)
         {
             foreach (Control c in flpBatteryLogs.Children)
                 if (typeof(Button) == c.GetType())
@@ -1239,14 +1322,44 @@ namespace MobileDebug_WPF
 
             Button btn = (Button)sender;
             btn.Background = Brushes.LightGreen;
-            string newFileName = (string)btn.Tag;
 
-            BatteryLogs log = new BatteryLogs(newFileName);
+            DirectoryInfo dir = new DirectoryInfo(WorkingPath + "var\\robot\\logs\\");
+
+            IEnumerable<FileInfo> names = dir.GetFiles().OrderByDescending(f => f.LastWriteTime.Year <= 1601 ? f.CreationTime : f.LastWriteTime);
+
+            IEnumerable<FileInfo> res =
+                from test in names
+                where test.Name.StartsWith("log_")
+                select test;
+
+            IList<FileInfo> lst = res.ToList<FileInfo>();
+
+            List<BatteryLogs> batLogs = new List<BatteryLogs>();
+            foreach (FileInfo file in res)
+                batLogs.Add(new BatteryLogs(file.FullName));
+
+            BatteryLogsDisplayPlot(batLogs);
+        }
+        private void BatteryLogsButton_Click(object sender, RoutedEventArgs e)
+        {
+            BtnBatteryLogsViewAll.Background = ButtonFace;
+            foreach (Control c in flpBatteryLogs.Children)
+                if (typeof(Button) == c.GetType())
+                    c.Background = ButtonFace;
+
+            Button btn = (Button)sender;
+            btn.Background = Brushes.LightGreen;
+
+            BatteryLogsDisplayPlot(new List<BatteryLogs>() { new BatteryLogs((string)btn.Tag) });
+        }
+        private void BatteryLogsDisplayPlot(List<BatteryLogs> batLogs)
+        {
+            BtnSaveBatteryChargeStateGraphImage.Visibility = Visibility.Visible;
+            LblPlotBatteryChargeStateTitle.Content = "Battery State of Charge (%)";
 
             PlotModel batterySOCPlotModel = new PlotModel
             {
-                Title = "Battery State of Charge (%)",
-                TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinPlotArea,
+                Title = string.Empty,
                 IsLegendVisible = false
             };
             DateTimeAxis batterySOCXAxis = new DateTimeAxis
@@ -1268,10 +1381,12 @@ namespace MobileDebug_WPF
 
             Chart_BatteryChargeState.Model = batterySOCPlotModel;
 
+            BtnSaveBatteryVoltageGraphImage.Visibility = Visibility.Visible;
+            LblPlotBatteryVoltageTitle.Content = "Battery Voltage (vDC)";
+
             PlotModel batteryVoltagePlotModel = new PlotModel
             {
-                Title = "Battery Voltage",
-                TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinPlotArea,
+                Title = string.Empty,
                 IsLegendVisible = false
             };
             DateTimeAxis batteryVoltageXAxis = new DateTimeAxis
@@ -1293,10 +1408,6 @@ namespace MobileDebug_WPF
             Chart_BatteryVoltage.Model = batteryVoltagePlotModel;
 
 
-            IEnumerable<BatteryLogs.BatteryLogData> batterySorted = from s in log.Results
-                                                                    orderby s.Time
-                                                                    select s;
-
             LineSeries batteryVoltageLineSeries = new LineSeries
             {
                 StrokeThickness = 1,
@@ -1311,10 +1422,17 @@ namespace MobileDebug_WPF
             };
             batterySOCPlotModel.Series.Add(batterySOCLineSeries);
 
-            foreach (BatteryLogs.BatteryLogData dat in batterySorted)
+            foreach (BatteryLogs log in batLogs)
             {
-                batterySOCLineSeries.Points.Add(new DataPoint(dat.Time.ToOADate(), dat.Level));
-                batteryVoltageLineSeries.Points.Add(new DataPoint(dat.Time.ToOADate(), dat.Voltage));
+                IEnumerable<BatteryLogs.BatteryLogData> batterySorted = from s in log.Results
+                                                                        orderby s.Time
+                                                                        select s;
+
+                foreach (BatteryLogs.BatteryLogData dat in batterySorted)
+                {
+                    batterySOCLineSeries.Points.Add(new DataPoint(dat.Time.ToOADate(), dat.Level));
+                    batteryVoltageLineSeries.Points.Add(new DataPoint(dat.Time.ToOADate(), dat.Voltage));
+                }
             }
             Chart_BatteryVoltage.InvalidatePlot(true);
             Chart_BatteryChargeState.InvalidatePlot(true);
@@ -1735,6 +1853,18 @@ namespace MobileDebug_WPF
 
             tabMapContentsRaw.Visibility = Visibility.Visible;
         }
+        //private void MapLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        //{
+
+
+        //    LinkLabel ll = (LinkLabel)sender;
+
+        //    rtbMap.SelectionStart = rtbMap.GetFirstCharIndexFromLine((int)ll.Tag - 1);
+        //    rtbMap.ScrollToCaret();
+
+        //}
+
+        private List<StatusLogs.Status> MapLostLogPositions { get; set; } = new List<StatusLogs.Status>();
         private string DrawMap(Map map, int width, int height)
         {
             map.Header.SetScaleF(width, height);
@@ -1748,7 +1878,7 @@ namespace MobileDebug_WPF
             {
                 g.FillRectangle(whiteBrush, 0, 0, map.Header.WidthScaled, map.Header.HeightScaled);
                 g.TranslateTransform(-map.Header.WidthOffset, -map.Header.HeightOffset - map.Header.Height);
-                g.ScaleTransform(map.Header.ScaleFactor.Width, -map.Header.ScaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
+                g.ScaleTransform(map.Header.ScaleFactor, -map.Header.ScaleFactor, System.Drawing.Drawing2D.MatrixOrder.Append);
 
                 foreach (MapGeometry.Line ln in map.Geometry.Lines)
                     g.DrawLine(blackPen, ln.Start, ln.End);
@@ -1756,7 +1886,7 @@ namespace MobileDebug_WPF
                 foreach (System.Drawing.Point ln in map.Geometry.Points)
                     g.FillRectangle(blackBrush, ln.X, ln.Y, 20, 20);
 
-                List<StatusLogs.Status> lost = DrawPositionsFromLog(g, map);
+                MapLostLogPositions = DrawPositionsFromLog(g, map);
                 DrawWiFiPositionsFromLog(g, map);
             }
 
@@ -1774,7 +1904,7 @@ namespace MobileDebug_WPF
             if (map.MapFile.LoggedStatus == null) return lost;
 
             System.Drawing.Rectangle r = new System.Drawing.Rectangle(map.Header.WidthOffset, map.Header.HeightOffset, map.Header.Width, map.Header.Height);
-            int sz = (int)(40.0 * (1 + Math.Abs((map.Header.ScaleFactor.Width - 1.0))));
+            int sz = (int)(40.0 * (1 + Math.Abs((map.Header.ScaleFactor - 1.0))));
             System.Drawing.Brush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue);
             foreach (StatusLogs.Status s in map.MapFile.LoggedStatus)
             {
@@ -1790,7 +1920,7 @@ namespace MobileDebug_WPF
             if (map.MapFile.LoggedWifi == null) return;
 
             System.Drawing.Rectangle r = new System.Drawing.Rectangle(map.Header.WidthOffset, map.Header.HeightOffset, map.Header.Width, map.Header.Height);
-            int sz = (int)(40.0 * (1 + Math.Abs((map.Header.ScaleFactor.Width - 1.0))));
+            int sz = (int)(40.0 * (1 + Math.Abs((map.Header.ScaleFactor - 1.0))));
             foreach (WifiLogs.WifiLogData s in map.MapFile.LoggedWifi)
             {
                 System.Drawing.Brush bBrush = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(255, 255, 0, 0));
@@ -1799,6 +1929,46 @@ namespace MobileDebug_WPF
                     g.FillPie(bBrush, new System.Drawing.Rectangle(s.Position.X, s.Position.Y, sz, sz), 0, 360);
             }
         }
+        private void DrawMapApplyToImage(string bmp)
+        {
+            ImgMapBorder.Child = new Image() { Source = Base64StringToBitmap(bmp) };
+
+            StringBuilder sb = new StringBuilder();
+            foreach (StatusLogs.Status dat in MapLostLogPositions)
+            {
+                Point p = Map.Header.OffsetTo(new Point(dat.Position.X, dat.Position.Y));
+                sb.AppendLine(dat.Time.ToString() + "\t" + "Offset: " + p.X.ToString() + " " + p.Y.ToString());// + "\\v log?" + ind.log.ToString("00") + "\\v0" + "\\par");
+            }
+            TxtMapPointsOffMap.Text = sb.ToString();
+
+
+            tabMapImage.Visibility = Visibility.Visible;
+        }
+        //private void rtbMapGLostPositions_MouseDoubleClick(object sender, MouseEventArgs e)
+        //{
+
+
+        //    if (!ModifierKeys.HasFlag(Keys.Shift)) return;
+
+        //    RichEdit50W rtb = (RichEdit50W)sender;
+
+        //    rtb.Select(rtb.GetFirstCharIndexFromLine(rtb.CurrentLineNumber), rtb.Lines[rtb.CurrentLineNumber].Length + 9);
+        //    string s = rtb.SelectedRtf;
+
+        //    int i = Convert.ToInt16(s.Substring(s.LastIndexOf("log?") + 4, 2));
+
+        //    using (frmRTF rtf = new frmRTF())
+        //    {
+        //        rtf.workPath = workPath;
+        //        rtf.logDetails = positionLogDetails[i];
+        //        rtf.logLineNumber = rtb.CurrentLogLineNumber;
+
+        //        rtf.ShowDialog();
+        //    }
+
+        //}
+
+
 
         public struct HeatPoint
         {
@@ -1836,7 +2006,7 @@ namespace MobileDebug_WPF
             using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
             {
                 g.TranslateTransform(-Map.Header.WidthOffset, -Map.Header.HeightOffset - Map.Header.Height);
-                g.ScaleTransform(Map.Header.ScaleFactor.Width, -Map.Header.ScaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
+                g.ScaleTransform(Map.Header.ScaleFactor, -Map.Header.ScaleFactor, System.Drawing.Drawing2D.MatrixOrder.Append);
 
                 foreach (MapGeometry.Line ln in Map.Geometry.Lines)
                     g.DrawLine(blackPen, ln.Start, ln.End);
@@ -1859,7 +2029,6 @@ namespace MobileDebug_WPF
 
             UpdateStatus("Completed!");
         }
-
         private System.Drawing.Bitmap DrawWiFiHeatMapFromLog(System.Drawing.Bitmap bSurface)
         {
             bSurface = CreateIntensityMask(bSurface);
@@ -1870,14 +2039,13 @@ namespace MobileDebug_WPF
 
             return bSurface;
         }
-
         private System.Drawing.Bitmap CreateIntensityMask(System.Drawing.Bitmap bSurface)
         {
             // Create new graphics surface from memory bitmap
             System.Drawing.Graphics DrawSurface = System.Drawing.Graphics.FromImage(bSurface);
 
             DrawSurface.TranslateTransform(-Map.Header.WidthOffset, -Map.Header.HeightOffset - Map.Header.Height);
-            DrawSurface.ScaleTransform(Map.Header.ScaleFactor.Width, -Map.Header.ScaleFactor.Height, System.Drawing.Drawing2D.MatrixOrder.Append);
+            DrawSurface.ScaleTransform(Map.Header.ScaleFactor, -Map.Header.ScaleFactor, System.Drawing.Drawing2D.MatrixOrder.Append);
             // Set background color to white so that pixels can be correctly colorized
             DrawSurface.Clear(System.Drawing.Color.White);
             double scale = Map.Header.Width / Map.Header.WidthScaled;
@@ -1997,7 +2165,7 @@ namespace MobileDebug_WPF
         {
             System.Drawing.Imaging.ColorMap[] OutputMap = new System.Drawing.Imaging.ColorMap[256];
             // Change this path to wherever you saved the palette image.
-            System.Drawing.Bitmap Palette = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromFile($"{AppPath}palette.bmp");
+            System.Drawing.Bitmap Palette = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromFile($"{AppPath}Resources\\Palette.bmp");
             // Loop through each pixel and create a new color mapping
             for (int X = 0; X <= 255; X++)
             {
@@ -2056,26 +2224,22 @@ namespace MobileDebug_WPF
                 MenuMap.Items.Add(save);
 
                 MenuItem dxMM;
-                string dxPath = App.Settings.GetValue<string>("DXMobileMapPath", null);
-                if (dxPath == null)
+                if (CheckDxMobileMapPath())
                 {
                     dxMM = new MenuItem()
                     {
-                        Header = "Get DXMobileMap",
-                        Tag = mapPath
+                        Header = "Create DXMobileMap Database",
                     };
-                    dxMM.Click += MapDBGetDxMobileMap_Click;
+                    dxMM.Click += MapDBCreateFile_Click;
                 }
                 else
                 {
                     dxMM = new MenuItem()
                     {
-                        Header = "Create DXMobileMap Database",
-                        Tag = mapPath
+                        Header = "Get DXMobileMap",
                     };
-                    dxMM.Click += MapDBCreateFile_Click;
+                    dxMM.Click += MapDBGetDxMobileMap_Click;
                 }
-
 
                 MenuMap.Items.Add(dxMM);
             }
@@ -2105,6 +2269,7 @@ namespace MobileDebug_WPF
             Microsoft.Win32.SaveFileDialog file = new Microsoft.Win32.SaveFileDialog
             {
                 CheckFileExists = false,
+                AddExtension = true,
                 CheckPathExists = true,
                 Filter = "Map file (*.map)|*.map",
                 FilterIndex = 1
@@ -2129,7 +2294,13 @@ namespace MobileDebug_WPF
         }
         public void MapDBCreateFile_Click(object sender, RoutedEventArgs e)
         {
-            string dxPath = App.Settings.GetValue<string>("DXMobileMapPath", null);
+            Thread thread = new Thread(() => MapDBCreateFile_Thread());
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+        public void MapDBCreateFile_Thread()
+        {
+            string dxPath = App.Settings.GetValue("DxMobileMapPath");
             if (dxPath == null)
             {
                 UpdateStatus("Please select the DxMobileMap.exe directory in the Application Settings.");
@@ -2157,7 +2328,7 @@ namespace MobileDebug_WPF
                     return;
             }
 
-            UpdateStatus($"Opening map database: {dbPath}");
+            UpdateStatus($"Creating map database: {dbPath}");
             using (SimpleDataBase mapDb = new SimpleDataBase().Init(dbPath, MapDatabaseTableName, true))
             {
                 if (mapDb == null) return;
@@ -2189,23 +2360,30 @@ namespace MobileDebug_WPF
 
                 Map.MapFile.DatabasePath = dbPath;
 
-                UpdateStatus($"Launching DxMobileMap");
                 if (File.Exists($"{dxPath}\\DxMobileMap_WPF.exe"))
-                    Process.Start($"{dxPath}\\DxMobileMap_WPF.exe");
+                {
+                    UpdateStatus($"Launching DxMobileMap");
+
+                    ProcessStartInfo proc = new ProcessStartInfo($"{dxPath}\\DxMobileMap_WPF.exe")
+                    {
+                        WorkingDirectory = dxPath
+                    };
+                    Process.Start(proc);
+                }
 
                 return;
             }
         }
+
         private string GetDXMobileMapDatabasePath(string dxPath)
         {
-            if (File.Exists(dxPath + "UserData\\ApplicationSettings.sqlite"))
-                using (SimpleDataBase dxDb = new SimpleDataBase().Init(dxPath + "UserData\\ApplicationSettings.sqlite", false))
+            if (File.Exists(dxPath + "\\UserData\\ApplicationSettings.sqlite"))
+                using (SimpleDataBase dxDb = new SimpleDataBase().Init(dxPath + "\\UserData\\ApplicationSettings.sqlite", false))
                 {
                     if (dxDb == null)
                         return null;
 
                     return dxDb.GetValue<string>("MapDatabaseDirectory", null);
-
                 }
             else
                 return null;
@@ -2332,7 +2510,11 @@ namespace MobileDebug_WPF
         private void Mf_FileOpened(string filePath)
         {
             string msg = $"Parsing file: {filePath}";
-            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { lblStatus.Content = s; }), msg);
+            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) =>
+            {
+                //lblStatus.Content = s; 
+                LstStatusList.Items.Insert(0, s);
+            }), msg);
             Thread.Sleep(1);
         }
         private void MapSectorHyperLink_Click(object sender, RoutedEventArgs e)
@@ -2340,96 +2522,7 @@ namespace MobileDebug_WPF
 
         }
 
-        //private void MapLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        //{
 
-
-        //    LinkLabel ll = (LinkLabel)sender;
-
-        //    rtbMap.SelectionStart = rtbMap.GetFirstCharIndexFromLine((int)ll.Tag - 1);
-        //    rtbMap.ScrollToCaret();
-
-        //}
-
-
-        //File Menu
-        //private void tsmOpenFolder_Click(object sender, EventArgs e)
-        //{
-
-
-        //    FolderBrowserDialog fol = new FolderBrowserDialog();
-
-        //    fol.ShowNewFolderButton = false;
-
-
-        //    if ((bool)fol.ShowDialog())
-        //    {
-        //        FilesLoading = true;
-
-        //        WorkingPath = fol.SelectedPath;
-        //        ZipFilePath = null;
-        //        AddToHistory(WorkingPath);
-
-        //        GoGo();
-        //    }
-
-        //}
-
-        //private void tsmGetFromRobot_Click(object sender, EventArgs e)
-        //{
-
-
-        //    frmDownload frm = new frmDownload();
-        //    frm.ShowDialog();
-
-        //    if (frm.ok)
-        //    {
-        //        FilesLoading = true;
-
-        //        zipFileFullName = frm.filePath + frm.fileName;
-        //        workPath = frm.filePath + frm.fileName + ".temp";
-        //        AddToHistory(zipFileFullName);
-
-        //        GoGo();
-        //    }
-        //    frm.Dispose();
-        //}
-
-        //private void tsmSaveMap_Click(object sender, EventArgs e)
-        //{
-
-
-        //    if (mapFullName != "")
-        //    {
-        //        SaveFileDialog sfd = new SaveFileDialog();
-
-        //        sfd.FileName = Path.GetFileName(mapFullName);// mapFullName.Substring(mapFullName.LastIndexOf('\\')+1);
-        //        sfd.Filter = "Map file (*.map)|*.map";
-        //        sfd.InitialDirectory = workPath.Substring(0, workPath.LastIndexOf('\\'));
-
-        //        if (sfd.ShowDialog() == DialogResult.OK)
-        //        {
-        //            File.Copy(mapFullName, sfd.FileName, true);
-        //        }
-        //    }
-        //}
-
-        //private void tsmSaveZip_Click(object sender, EventArgs e)
-        //{
-
-
-        //    CreateZipFile();
-        //}
-
-        //private void tsmUpload_Click(object sender, EventArgs e)
-        //{
-
-
-        //    if (string.IsNullOrEmpty(zipFileFullName)) return;
-
-        //    //frmUpload frm = new frmUpload(zipFileFullName, submittedDetailsFullName);
-        //    //frm.ShowDialog();
-        //}
 
         private void MenuOpenZipFile_Click(object sender, RoutedEventArgs e)
         {
@@ -2491,7 +2584,12 @@ namespace MobileDebug_WPF
         }
         private void MenuSettings_Application_Click(object sender, RoutedEventArgs e)
         {
-
+            ApplicationSettingsEditor appEd = new ApplicationSettingsEditor
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            appEd.Show();
         }
 
         private class FileHistory
@@ -2602,30 +2700,69 @@ namespace MobileDebug_WPF
         private void ExpSystemInfo_Collapsed(object sender, RoutedEventArgs e) => App.Settings.SetValue("ExpanderSystemInfo", ((Expander)sender).IsExpanded);
         private void ExpSystemInfo_Expanded(object sender, RoutedEventArgs e) => App.Settings.SetValue("ExpanderSystemInfo", ((Expander)sender).IsExpanded);
 
+        private void ExpMapPointsOffMap_Collapsed(object sender, RoutedEventArgs e)
+        {
 
-        //private void rtbMapGLostPositions_MouseDoubleClick(object sender, MouseEventArgs e)
-        //{
+        }
+
+        private void ExpMapPointsOffMap_Expanded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnSaveMapImage_Click(object sender, RoutedEventArgs e)
+        {
+            SaveBMPtoJPGFile((BitmapSource)((Image)ImgMapBorder.Child).Source);
+        }
+
+        private void BtnSaveWiFiHeatMapImage_Click(object sender, RoutedEventArgs e)
+        {
+            SaveBMPtoJPGFile((BitmapSource)((Image)ImgMapWiFiHeatBorder.Child).Source);
+        }
+
+        private void SaveBMPtoJPGFile(BitmapSource source)
+        {
+            Microsoft.Win32.SaveFileDialog file = new Microsoft.Win32.SaveFileDialog
+            {
+                CheckFileExists = false,
+                AddExtension = true,
+                CheckPathExists = true,
+                Filter = "Image File (*.jpg)|*.jpg",
+                FilterIndex = 1
+            };
+
+            string filePath;
+            if (file.ShowDialog() == true)
+                filePath = file.FileName;
+            else return;
+
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(source));
+            using (FileStream stream = new FileStream(filePath, FileMode.Create))
+                encoder.Save(stream);
+        }
+
+        private void BtnSaveWiFiDecibelsGraphImage_Click(object sender, RoutedEventArgs e)
+        {
+            SaveBMPtoJPGFile(Chart_WiFiDecibels.ToBitmap());
+        }
+
+        private void BtnSaveWiFiBaudGraphImage_Click(object sender, RoutedEventArgs e)
+        {
+            SaveBMPtoJPGFile(Chart_WiFiBaud.ToBitmap());
+        }
+
+        private void BtnSaveBatteryVoltageGraphImage_Click(object sender, RoutedEventArgs e)
+        {
+            SaveBMPtoJPGFile(Chart_BatteryVoltage.ToBitmap());
+        }
+
+        private void BtnSaveBatteryChargeStateGraphImage_Click(object sender, RoutedEventArgs e)
+        {
+            SaveBMPtoJPGFile(Chart_BatteryChargeState.ToBitmap());
+        }
 
 
-        //    if (!ModifierKeys.HasFlag(Keys.Shift)) return;
-
-        //    RichEdit50W rtb = (RichEdit50W)sender;
-
-        //    rtb.Select(rtb.GetFirstCharIndexFromLine(rtb.CurrentLineNumber), rtb.Lines[rtb.CurrentLineNumber].Length + 9);
-        //    string s = rtb.SelectedRtf;
-
-        //    int i = Convert.ToInt16(s.Substring(s.LastIndexOf("log?") + 4, 2));
-
-        //    using (frmRTF rtf = new frmRTF())
-        //    {
-        //        rtf.workPath = workPath;
-        //        rtf.logDetails = positionLogDetails[i];
-        //        rtf.logLineNumber = rtb.CurrentLogLineNumber;
-
-        //        rtf.ShowDialog();
-        //    }
-
-        //}
 
 
     }

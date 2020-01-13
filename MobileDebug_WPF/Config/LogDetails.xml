@@ -109,7 +109,7 @@
   <Log>
     <isEM>false</isEM>
     <isLD>true</isLD>
-    <DisplayName>Robot Main Log</DisplayName>
+    <DisplayName>WPA Supplicant</DisplayName>
     <!--Name of the file.-->
     <FileName>wpa_</FileName>
     <!--Path to the file.-->
