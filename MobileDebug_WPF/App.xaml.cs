@@ -1,7 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
+using System.Xml.Serialization;
 
 namespace MobileDebug_WPF
 {
@@ -13,8 +18,15 @@ namespace MobileDebug_WPF
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            base.OnStartup(e);
+            base.OnStartup(e); 
+             
 
+
+            if(!Directory.Exists(UserDataDirectory))
+            {
+                Console.WriteLine($"Creating directory: {UserDataDirectory}");
+                Directory.CreateDirectory(UserDataDirectory);
+            }
             FileStream filestream = new FileStream(UserDataDirectory + "log.txt", FileMode.Append);
             var streamwriter = new StreamWriter(filestream)
             {
@@ -22,14 +34,8 @@ namespace MobileDebug_WPF
             };
             Console.SetOut(streamwriter);
             Console.SetError(streamwriter);
-
-            if (!Directory.Exists(UserDataDirectory))
-            {
-                Console.WriteLine($"Creating directory: {UserDataDirectory}");
-                Directory.CreateDirectory(UserDataDirectory);
-            }
             Settings = new SimpleDataBase().Init($"{UserDataDirectory}ApplicationSettings.sqlite", false);
-            if (Settings == null)
+            if(Settings == null)
             {
                 Console.WriteLine($"Could not initialize the application settings database: {UserDataDirectory}ApplicationSettings.sqlite");
                 throw new Exception();
@@ -41,6 +47,7 @@ namespace MobileDebug_WPF
         }
         public App()
         {
+           //GetCommandData cmd = new GetCommandData();
 
         }
 
@@ -52,5 +59,7 @@ namespace MobileDebug_WPF
 
             Settings.Dispose();
         }
+
+
     }
 }

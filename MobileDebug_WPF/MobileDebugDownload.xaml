@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MobileDebug_WPF"
         mc:Ignorable="d"
-        Title="Download Debug Log" Height="152.8" Width="259.471" Icon="Resources/favicon.png" >
+        Title="Download Debug Log" Height="152.8" Width="259.471" Icon="Resources/favicon.png" ResizeMode="NoResize" Closing="Window_Closing" >
     <Grid>
 
 
@@ -20,10 +20,13 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,3,0,0" >
                 <Label Content="Password" MinWidth="140" HorizontalContentAlignment="Right"/>
-                <TextBox x:Name="TxtPassword" MinWidth="100"/>
+                <PasswordBox x:Name="TxtPassword" MinWidth="100"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,3,0,0"/>
             <StackPanel Orientation="Horizontal" Margin="0,3,0,0" HorizontalAlignment="Center">
+
+                <ProgressBar x:Name="PrgDownload" Height="10" Width="127" Margin="0,0,10,0"/>
+
                 <Button x:Name="BtnDownload" Content="Download" Click="BtnDownload_Click"/>
 
             </StackPanel>

@@ -38,14 +38,15 @@ namespace MobileDebug_WPF
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            App.Settings.SetValue("DxMobileMapPath", TxtDxMobileMapPath.Text);
+
+            //App.Settings.SetValue("DxMobileMapPath", TxtDxMobileMapPath.Text);
         }
 
         private void BtnSelectDxMobileMapPath_Click(object sender, RoutedEventArgs e)
         {
             string filePath = null;
             if (CheckDxMobileMapPath())
-                filePath = $"{App.Settings.GetValue("DxMobileMapPath")}\\DxMobileMap_WPF.exe";
+                filePath = $"{App.Settings.GetValue("DxMobileMapPath")}DxMobileMap_WPF.exe";
 
             Microsoft.Win32.OpenFileDialog file = new Microsoft.Win32.OpenFileDialog
             {
@@ -58,8 +59,10 @@ namespace MobileDebug_WPF
 
             if ((bool)file.ShowDialog())
             {
-                App.Settings.SetValue("DxMobileMapPath", System.IO.Path.GetDirectoryName(file.FileName));
-                
+                string path = System.IO.Path.GetDirectoryName(file.FileName);
+                if (!path.EndsWith("\\")) path += "\\";
+                App.Settings.SetValue("DxMobileMapPath", path);
+
             }
             TxtDxMobileMapPath.Text = App.Settings.GetValue("DxMobileMapPath");
         }
@@ -84,12 +87,16 @@ namespace MobileDebug_WPF
                 if (File.Exists(temp))
                     path = System.IO.Path.GetDirectoryName(temp);
             }
-            App.Settings.SetValue("DxMobileMapPath", path);
 
             if (string.IsNullOrEmpty(path))
+            {
+                App.Settings.SetValue("DxMobileMapPath", string.Empty);
                 return false;
-            else
-                return true;
+            }
+
+            if (!path.EndsWith("\\")) path += "\\";
+            App.Settings.SetValue("DxMobileMapPath", path);
+            return true;
         }
 
     }

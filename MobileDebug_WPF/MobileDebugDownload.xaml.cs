@@ -12,6 +12,8 @@ namespace MobileDebug_WPF
         public delegate void FileDownloadedEventHandler(string filePath);
         public event FileDownloadedEventHandler FileDownloaded;
 
+        private Classes.MobileDownload Download { get; set; } = new Classes.MobileDownload();
+
         public MobileDebugDownload()
         {
             InitializeComponent();
@@ -22,18 +24,8 @@ namespace MobileDebug_WPF
 
         private void BtnDownload_Click(object sender, RoutedEventArgs e)
         {
-            IPAddress ip;
-            try
-            {
-                ip = IPAddress.Parse(TxtIPAddress.Text);
-            }
-            catch
-            {
-                //UserMessage.Show(this, "Invalid IP : " + TxtIPAddress.Text, "Ooops!", new List<string>() { "OK" });
-                return;
-            }
-
-            App.Settings.SetValue("MobileDebugDownload.IPAddress", ip.ToString());
+            App.Settings.SetValue("MobileDebugDownload.IPAddress", TxtIPAddress.Text);
+            App.Settings.SetValue("MobileDebugDownload.UserName", TxtUserName.Text);
 
             Microsoft.Win32.SaveFileDialog saveDiag = new Microsoft.Win32.SaveFileDialog
             {
@@ -46,33 +38,32 @@ namespace MobileDebug_WPF
             if (saveDiag.ShowDialog() == false)
                 return;
 
-            string fileName = System.IO.Path.GetFileNameWithoutExtension(saveDiag.FileName);
-            string filePath = System.IO.Path.GetDirectoryName(saveDiag.FileName);
-
-            fileName = $"{fileName}_{DateTime.Now.ToString("MMddyy_HHmmss")}.zip";
-            string file = System.IO.Path.Combine(filePath, fileName);
-
-            ServicePointManager.ServerCertificateValidationCallback += (sender1, certificate, chain, sslPolicyErrors) => true;
-            using (WebClient wc = new WebClient())
+            if (Download.StartGetDebugFile(TxtUserName.Text, TxtPassword.Password, TxtIPAddress.Text, saveDiag.FileName))
             {
-                try
-                {
-                    wc.Credentials = new NetworkCredential(TxtUserName.Text, TxtPassword.Text);
-                    wc.DownloadFile("https://" + ip.ToString() + "/cgi-bin/debugInfo.cgi", file);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    //UserMessage.Show(this, ex.Message , "Ooops!", new List<string>() { "OK" });
-                    return;
-                }
+                Download.DownloadProgressChanged += Download_DownloadProgressChanged;
+                Download.DownloadFileCompleted += Download_DownloadFileCompleted;
             }
+        }
 
-            App.Settings.SetValue("MobileDebugDownload.UserName", TxtUserName.Text);
+        private void Download_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+            if (e.Error == null)
+            {
+                FileDownloaded?.BeginInvoke("", null, null);
+                Close();
+            }
+                
+        }
 
-            FileDownloaded?.Invoke(file);
+        private void Download_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            PrgDownload.Maximum = 100;
+            PrgDownload.Value = e.ProgressPercentage;
+        }
 
-            this.Close();
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Download?.Dispose();
         }
     }
 }

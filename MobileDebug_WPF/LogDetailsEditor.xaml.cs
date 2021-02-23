@@ -33,28 +33,39 @@ namespace MobileDebug_WPF
 
         }
 
+        private class TextTag
+        {
+            public string Data { get; set; }
+            public bool IsLog { get; set; } = false;
+            public LogDetails_Serializer.LogDetailsLog Log { get; set; }
+            public bool IsSearch { get; set; } = false;
+            public LogDetails_Serializer.LogDetailsLogSearch Search { get; set; }
+        }
+
         private void Load()
         {
+            TvMain.Items.Clear();
+
             foreach (LogDetails_Serializer.LogDetailsLog log in Serial.Log)
             {
-
                 StackPanel stkLog = new StackPanel()
                 {
-                    Orientation= Orientation.Horizontal,
-                    
+                    Orientation = Orientation.Horizontal,
+
                 };
+
                 TextBox txtLogDisplayName = new TextBox()
                 {
-                    Text=log.DisplayName,
-                    //IsReadOnly = true,
+                    Text = log.DisplayName,
+                    Tag = new TextTag() { Data = log.DisplayName, IsLog = true, Log = log },
+                    IsReadOnly = true,
                     BorderBrush = Background,
                     VerticalContentAlignment = VerticalAlignment.Center,
                 };
-                txtLogDisplayName.TextChanged += (sender, e) =>
-                {
-                    log.DisplayName = ((TextBox)sender).Text;
-                };
+                txtLogDisplayName.GotFocus += (sender, e) => SelectedTextBox = (TextBox)sender;
+                txtLogDisplayName.TextChanged += (sender, e) => log.DisplayName = ((TextBox)sender).Text;
                 stkLog.Children.Add(txtLogDisplayName);
+
                 CheckBox chkLogIsEm = new CheckBox()
                 {
                     IsChecked = log.isEM,
@@ -63,11 +74,9 @@ namespace MobileDebug_WPF
                     Margin = new Thickness(10, 0, 0, 0),
                     Height = 28
                 };
-                chkLogIsEm.Click += (sender, e) =>
-                {
-                    log.isEM = (bool)((CheckBox)sender).IsChecked;
-                };
+                chkLogIsEm.Click += (sender, e) => log.isEM = (bool)((CheckBox)sender).IsChecked;
                 stkLog.Children.Add(chkLogIsEm);
+
                 CheckBox chkLogIsLD = new CheckBox()
                 {
                     IsChecked = log.isLD,
@@ -76,10 +85,7 @@ namespace MobileDebug_WPF
                     Margin = new Thickness(10, 0, 0, 0),
                     Height = 28
                 };
-                chkLogIsLD.Click += (sender, e) =>
-                {
-                    log.isLD = (bool)((CheckBox)sender).IsChecked;
-                };
+                chkLogIsLD.Click += (sender, e) => log.isLD = (bool)((CheckBox)sender).IsChecked;
                 stkLog.Children.Add(chkLogIsLD);
 
                 TreeViewItem tviLog = new TreeViewItem()
@@ -91,18 +97,20 @@ namespace MobileDebug_WPF
                     if (((TreeViewItem)sender).IsSelected)
                         ((TreeViewItem)sender).IsSelected = false;
                 };
-
                 TvMain.Items.Add(tviLog);
 
                 StackPanel stkLogDetails = new StackPanel()
                 {
                     Orientation = Orientation.Vertical,
                 };
+                tviLog.Items.Add(stkLogDetails);
 
                 StackPanel stkLogFileName = new StackPanel()
                 {
                     Orientation = Orientation.Horizontal,
                 };
+                stkLogDetails.Children.Add(stkLogFileName);
+
                 Label lblLogFileName = new Label()
                 {
                     Content = "File Name:",
@@ -110,17 +118,20 @@ namespace MobileDebug_WPF
                     Margin = new Thickness(0, 0, 10, 0),
                     Height = 28
                 };
+                stkLogFileName.Children.Add(lblLogFileName);
+
                 TextBox txtLogFileName = new TextBox()
                 {
                     Text = log.FileName,
-                    //IsReadOnly = true,
+                    Tag = new TextTag() { Data = log.FileName },
+                    IsReadOnly = true,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     BorderBrush = Background
                 };
-                txtLogFileName.TextChanged += (sender, e) =>
-                {
-                    log.FileName = ((TextBox)sender).Text;
-                };
+                txtLogFileName.GotFocus += (sender, e) => SelectedTextBox = (TextBox)sender;
+                txtLogFileName.TextChanged += (sender, e) => log.FileName = ((TextBox)sender).Text;
+                stkLogFileName.Children.Add(txtLogFileName);
+
                 CheckBox chkLogIsMulti = new CheckBox()
                 {
                     IsChecked = log.MultiLog,
@@ -129,19 +140,15 @@ namespace MobileDebug_WPF
                     Margin = new Thickness(10, 0, 0, 0),
                     Height = 28
                 };
-                chkLogIsMulti.Click += (sender, e) =>
-                {
-                    log.MultiLog = (bool)((CheckBox)sender).IsChecked;
-                };
-                stkLogFileName.Children.Add(lblLogFileName);
-                stkLogFileName.Children.Add(txtLogFileName);
+                chkLogIsMulti.Click += (sender, e) => log.MultiLog = (bool)((CheckBox)sender).IsChecked;
                 stkLogFileName.Children.Add(chkLogIsMulti);
-                stkLogDetails.Children.Add(stkLogFileName);
 
                 StackPanel stkLogFilePath = new StackPanel()
                 {
                     Orientation = Orientation.Horizontal,
                 };
+                stkLogDetails.Children.Add(stkLogFilePath);
+
                 Label lblLogFilePath = new Label()
                 {
                     Content = "File Path:",
@@ -149,25 +156,26 @@ namespace MobileDebug_WPF
                     Margin = new Thickness(0, 0, 10, 0),
                     Height = 28
                 };
+                stkLogFilePath.Children.Add(lblLogFilePath);
+
                 TextBox txtLogFilePath = new TextBox()
                 {
                     Text = log.FilePath,
+                    Tag = new TextTag() { Data = log.FilePath },
                     IsReadOnly = true,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     BorderBrush = Background
                 };
-                txtLogFileName.TextChanged += (sender, e) =>
-                {
-                    log.FilePath = ((TextBox)sender).Text;
-                };
-                stkLogFilePath.Children.Add(lblLogFilePath);
+                txtLogFilePath.GotFocus += (sender, e) => SelectedTextBox = (TextBox)sender;
+                txtLogFileName.TextChanged += (sender, e) => log.FilePath = ((TextBox)sender).Text;
                 stkLogFilePath.Children.Add(txtLogFilePath);
-                stkLogDetails.Children.Add(stkLogFilePath);
 
                 StackPanel stkLogFileType = new StackPanel()
                 {
                     Orientation = Orientation.Horizontal,
                 };
+                stkLogDetails.Children.Add(stkLogFileType);
+
                 Label lblLogFileType = new Label()
                 {
                     Content = "File Type:",
@@ -175,6 +183,8 @@ namespace MobileDebug_WPF
                     Margin = new Thickness(0, 0, 10, 0),
                     Height = 28
                 };
+                stkLogFileType.Children.Add(lblLogFileType);
+
                 ComboBox cmbLogFileType = new ComboBox()
                 {
                     IsReadOnly = true,
@@ -184,16 +194,8 @@ namespace MobileDebug_WPF
                 cmbLogFileType.Items.Add("TEXT");
                 cmbLogFileType.Items.Add("CSV");
                 cmbLogFileType.SelectedValue = log.FileType;
-                cmbLogFileType.SelectionChanged += (sender, e) =>
-                {
-                    log.FileType = (string)((ComboBox)sender).SelectedValue;
-                };
-
-                stkLogFileType.Children.Add(lblLogFileType);
+                cmbLogFileType.SelectionChanged += (sender, e) => log.FileType = (string)((ComboBox)sender).SelectedValue;
                 stkLogFileType.Children.Add(cmbLogFileType);
-                stkLogDetails.Children.Add(stkLogFileType);
-
-                tviLog.Items.Add(stkLogDetails);
 
                 foreach (LogDetails_Serializer.LogDetailsLogSearch ser in log.Search)
                 {
@@ -201,17 +203,18 @@ namespace MobileDebug_WPF
                     {
                         Orientation = Orientation.Horizontal,
                     };
+
                     TextBox txtSearchDisplayName = new TextBox()
                     {
                         Text = ser.DisplayName,
-                        //IsReadOnly = true,
+                        Tag = new TextTag() { Data = ser.DisplayName, IsSearch = true, Search = ser },
+                        IsReadOnly = true,
                         BorderBrush = Background,
                         VerticalContentAlignment = VerticalAlignment.Center,
                     };
-                    txtSearchDisplayName.TextChanged += (sender, e) =>
-                    {
-                        ser.DisplayName = ((TextBox)sender).Text;
-                    };
+                    txtSearchDisplayName.GotFocus += (sender, e) => SelectedTextBox = (TextBox)sender;
+                    txtSearchDisplayName.TextChanged += (sender, e) => ser.DisplayName = ((TextBox)sender).Text;
+
                     stkSearch.Children.Add(txtSearchDisplayName);
                     CheckBox chkSearchIsEm = new CheckBox()
                     {
@@ -221,10 +224,8 @@ namespace MobileDebug_WPF
                         Margin = new Thickness(10, 0, 0, 0),
                         Height = 28
                     };
-                    chkSearchIsEm.Click += (sender, e) =>
-                    {
-                        ser.isEM = (bool)((CheckBox)sender).IsChecked;
-                    };
+                    chkSearchIsEm.Click += (sender, e) => ser.isEM = (bool)((CheckBox)sender).IsChecked;
+
                     stkSearch.Children.Add(chkSearchIsEm);
                     CheckBox chkSearchIsLD = new CheckBox()
                     {
@@ -271,14 +272,14 @@ namespace MobileDebug_WPF
                     TextBox txtSearchRegex = new TextBox()
                     {
                         Text = ser.RegEx2Match,
-                        //IsReadOnly = true,
+                        Tag = new TextTag() { Data = ser.RegEx2Match },
+                        IsReadOnly = true,
                         VerticalContentAlignment = VerticalAlignment.Center,
                         BorderBrush = Background
                     };
-                    txtSearchRegex.TextChanged += (sender, e) =>
-                    {
-                        ser.RegEx2Match = ((TextBox)sender).Text;
-                    };
+                    txtSearchRegex.GotFocus += (sender, e) => SelectedTextBox = (TextBox)sender;
+                    txtSearchRegex.TextChanged += (sender, e) => ser.RegEx2Match = ((TextBox)sender).Text;
+
                     stkSearchRegex.Children.Add(lblSearchRegex);
                     stkSearchRegex.Children.Add(txtSearchRegex);
                     stkSearchDetails.Children.Add(stkSearchRegex);
@@ -320,16 +321,84 @@ namespace MobileDebug_WPF
             }
         }
 
+        private void StkSearch_GotFocus(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private TextBox SelectedTextBox { get; set; } = null;
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             //LogDetails_Serializer.LogDetails sLog = LogDetails_Serializer.Load($"{SearchConfigurationPath}LogDetails.xml");
             //if (sLog.GetHashCode().Equals(Serial.GetHashCode())) return;
 
-            if (UserMessage.Show(this, "Would you like to save the changes?", "Save Changes?", new List<string>(){ "No","Yes"}) == "Yes")
+            if (UserMessage.Show(this, "Would you like to save the changes?", "Save Changes?", new List<string>() { "Yes", "No" }) == "Yes")
             {
                 File.Copy($"{SearchConfigurationPath}LogDetails.xml", $"{SearchConfigurationPath}LogDetails_{DateTime.Now.ToOADate().ToString()}.xml");
                 LogDetails_Serializer.Save($"{SearchConfigurationPath}LogDetails.xml", Serial);
             }
+        }
+
+        private void TvMain_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            if (SelectedTextBox == null)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            TextTag tag = (TextTag)SelectedTextBox.Tag;
+            if (tag.IsLog)
+            {
+                MenuNewLog.Visibility = Visibility.Visible;
+                MenuDeleteLog.Visibility = Visibility.Visible;
+
+                MenuNewSearch.Visibility = Visibility.Collapsed;
+                MenuDeleteSearch.Visibility = Visibility.Collapsed;
+
+                MenuEdit.Visibility = Visibility.Visible;
+            }
+            else if (tag.IsSearch)
+            {
+                MenuNewLog.Visibility = Visibility.Collapsed;
+                MenuDeleteLog.Visibility = Visibility.Collapsed;
+
+                MenuNewSearch.Visibility = Visibility.Visible;
+                MenuDeleteSearch.Visibility = Visibility.Visible;
+
+                MenuEdit.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                MenuNewLog.Visibility = Visibility.Collapsed;
+                MenuDeleteLog.Visibility = Visibility.Collapsed;
+
+                MenuNewSearch.Visibility = Visibility.Collapsed;
+                MenuDeleteSearch.Visibility = Visibility.Collapsed;
+
+                MenuEdit.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void MenuNewLog_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void MenuDeleteLog_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void MenuNewSearch_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void MenuDeleteSearch_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

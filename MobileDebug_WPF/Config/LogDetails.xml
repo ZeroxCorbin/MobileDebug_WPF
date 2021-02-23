@@ -6,13 +6,13 @@
     <isLD>true</isLD>
     <DisplayName>Config Log</DisplayName>
     <!-- Name of the file. -->
-    <FileName>configLog.txt</FileName>
+    <FileName>configLog</FileName>
     <!-- Path to the file. -->
     <FilePath>\var\log\</FilePath>
     <!-- Supported types: TEXT , CSV -->
     <FileType>TEXT</FileType>
     <!-- Can have multiple Search nodes -->
-    <MultiLog>false</MultiLog>
+    <MultiLog>true</MultiLog>
     <!-- If this is true the FilePath is searched for files starting with FileName. -->
     <Search>
       <isEM>true</isEM>
@@ -105,46 +105,14 @@
       <!--Supported levels: DEBUG , INFO , WARN , ERROR , FATAL-->
       <Level>ERROR</Level>
     </Search>
-  </Log>
-  <Log>
-    <isEM>false</isEM>
-    <isLD>true</isLD>
-    <DisplayName>WPA Supplicant</DisplayName>
-    <!--Name of the file.-->
-    <FileName>wpa_</FileName>
-    <!--Path to the file.-->
-    <FilePath>\var\log\wpa_supplicant</FilePath>
-    <!--Supported types: TEXT , CSV-->
-    <FileType>TEXT</FileType>
-    <!--Can have multiple Search nodes-->
-    <MultiLog>true</MultiLog>
-    <!--If this is true the FilePath is searched for files starting with FileName.-->
     <Search>
       <isEM>false</isEM>
       <isLD>true</isLD>
-      <DisplayName>Warnings</DisplayName>
+      <DisplayName>Inside</DisplayName>
       <!--RegEx pattern-->
-      <RegEx2Match>(?i)warning</RegEx2Match>
-      <!--Supported levels: DEBUG , INFO , WARN , ERROR , FATAL-->
-      <Level>WARN</Level>
-    </Search>
-    <Search>
-      <isEM>false</isEM>
-      <isLD>true</isLD>
-      <DisplayName>Errors</DisplayName>
-      <!--RegEx pattern-->
-      <RegEx2Match>(?i)error</RegEx2Match>
+      <RegEx2Match>(?i)inside</RegEx2Match>
       <!--Supported levels: DEBUG , INFO , WARN , ERROR , FATAL-->
       <Level>ERROR</Level>
-    </Search>
-    <Search>
-      <isEM>false</isEM>
-      <isLD>true</isLD>
-      <DisplayName>CTRL</DisplayName>
-      <!--RegEx pattern-->
-      <RegEx2Match>(?i)CTRL-</RegEx2Match>
-      <!--Supported levels: DEBUG , INFO , WARN , ERROR , FATAL-->
-      <Level>INFO</Level>
     </Search>
   </Log>
   <!--<Log>

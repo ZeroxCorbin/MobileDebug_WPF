@@ -24,11 +24,11 @@
                     <MenuItem x:Name="MenuSettings_Search" Header="Search Settings"/>
                     <MenuItem x:Name="MenuSettings_Application" Header="Application Settings" Click="MenuSettings_Application_Click"/>
                 </MenuItem>
-                <MenuItem x:Name="MenuMap" Header="Map" Visibility="Collapsed"/>
+                <MenuItem x:Name="MenuMap" Header="Map" Visibility="Collapsed" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}"/>
             </Menu>
-            
+
             <Label Content="Status: " Margin="20,0,0,0" VerticalContentAlignment="Center"/>
-            <ListBox x:Name="LstStatusList" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" ScrollViewer.VerticalScrollBarVisibility="Visible" Margin="0,1"/>
+            <ListBox x:Name="LstStatusList" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" ScrollViewer.VerticalScrollBarVisibility="Visible" Margin="0,1" BorderBrush="{x:Null}"/>
         </ToolBar>
         <Expander x:Name="ExpSystemInfo" Grid.Row="1" Grid.Column="0" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3" Collapsed="ExpSystemInfo_Collapsed" Expanded="ExpSystemInfo_Expanded">
             <Expander.Header>
@@ -96,7 +96,7 @@
                     </ScrollViewer>
                     <TextBox x:Name="TxtLogLinesPrev" Grid.Column="1" Grid.Row="0" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
                     <RichTextBox Grid.Column="1" Grid.Row="1" x:Name="rtbLogLines" Margin="3" AutoWordSelection="False" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
-                    
+
                 </Grid>
             </TabItem>
             <TabItem x:Name="tabCrashLogs" Header="Crash Logs">
@@ -141,7 +141,7 @@
                     </StackPanel>
                     <oxy:PlotView x:Name="Chart_WiFiDecibels" Grid.Row="1" Grid.Column="2" />
                     <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="3" HorizontalAlignment="Center">
-                        
+
                         <Button x:Name="BtnSaveWiFiBaudGraphImage" Click="BtnSaveWiFiBaudGraphImage_Click" Margin="10,1,0,1" VerticalAlignment="Center">
                             <Image Source="Resources/SaveAs.bmp"/>
                         </Button>
@@ -211,7 +211,7 @@
                     <ScrollViewer Grid.Row="0">
                         <StackPanel Grid.Row="0" x:Name="flpMapSections" Margin="3" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" CanHorizontallyScroll="True" ScrollViewer.CanContentScroll="True" Orientation="Horizontal"/>
                     </ScrollViewer>
-                    <RichTextBox Grid.Row="1" x:Name="rtbMap" Margin="3" AutoWordSelection="False" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
+                    <RichTextBox Grid.Row="1" x:Name="rtbMap" Margin="3" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
 
                 </Grid>
             </TabItem>
@@ -234,7 +234,7 @@
                         </Button>
                     </StackPanel>
                     <local:ZoomBorder Grid.Row="2" x:Name="ImgMapBorder" Margin="3" VerticalAlignment="Top" ClipToBounds="True" Background="Gray">
-                       <Image Stretch="None"/>                     
+                        <Image Stretch="None"/>
                     </local:ZoomBorder>
 
                 </Grid>

@@ -7,7 +7,26 @@
         mc:Ignorable="d"
         Title="Log Search Editor" Height="450" Width="800" Closing="Window_Closing" Icon="Resources/favicon.png">
     <Grid>
-        <TreeView x:Name="TvMain" HorizontalAlignment="Left" Height="404" Margin="10,10,0,0" VerticalAlignment="Top" Width="776"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="28"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ToolBarTray>
+            <ToolBar>
+                <Button Content="Add Log"/>
+            </ToolBar>
+        </ToolBarTray>
+        <TreeView Grid.Row="1" x:Name="TvMain" HorizontalAlignment="Left" Height="409" Margin="10,5,0,-18" VerticalAlignment="Top" Width="776" ContextMenuOpening="TvMain_ContextMenuOpening">
+            <TreeView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem x:Name="MenuDeleteLog" Header="Delete Log" Click="MenuDeleteLog_Click"/>
+                    <MenuItem x:Name="MenuNewLog" Header="New Log" Click="MenuNewLog_Click"/>
+                    <MenuItem x:Name="MenuDeleteSearch" Header="Delete Search" Click="MenuDeleteSearch_Click"/>
+                    <MenuItem x:Name="MenuNewSearch" Header="New Search" Click="MenuNewSearch_Click"/>
+                    <MenuItem x:Name="MenuEdit" Header="Edit"/>
+                </ContextMenu>
+            </TreeView.ContextMenu>
+        </TreeView>
 
     </Grid>
 </Window>
