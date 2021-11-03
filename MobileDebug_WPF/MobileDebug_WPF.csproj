@@ -19,6 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\FileSearch\FileSearch\FileSearch.csproj" />
+    <ProjectReference Include="..\..\MobileLogs\MobileLogs\MobileLogs.csproj" />
+    <ProjectReference Include="..\..\MobileMap\MobileMap\MobileMap.csproj" />
+    <ProjectReference Include="..\..\RingBuffer\RingBuffer\RingBuffer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Config\LogDetails.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
