@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<LogDetails>
+  <Log>
+    <isEM>true</isEM>
+    <isLD>true</isLD>
+    <DisplayName>Config Log</DisplayName>
+    <!-- Name of the file. -->
+    <FileName>configLog</FileName>
+    <!-- Path to the file. -->
+    <FilePath>\var\log\</FilePath>
+    <!-- Supported types: TEXT , CSV -->
+    <FileType>TEXT</FileType>
+    <!-- Can have multiple Search nodes -->
+    <MultiLog>true</MultiLog>
+    <!-- If this is true the FilePath is searched for files starting with FileName. -->
+    <Search>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Reboot</DisplayName>
+      <!-- RegEx pattern-->
+      <RegEx2Match>checkReboot</RegEx2Match>
+      <!-- Supported levels: DEBUG , INFO , WARN , ERROR , FATAL -->
+      <Level>INFO</Level>
+    </Search>
+    <Search>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Errors</DisplayName>
+      <!-- RegEx pattern-->
+      <RegEx2Match>(?i)error</RegEx2Match>
+      <!-- Supported levels: DEBUG , INFO , WARN , ERROR , FATAL -->
+      <Level>ERROR</Level>
+    </Search>
+  </Log>
+  <Log>
+    <isEM>true</isEM>
+    <isLD>true</isLD>
+    <DisplayName>Shutdown Log</DisplayName>
+    <!-- Name of the file. -->
+    <FileName>shutdownLog.csv</FileName>
+    <!-- Path to the file. -->
+    <FilePath>\var\robot\logs\</FilePath>
+    <!-- Supported types: TEXT , CSV -->
+    <FileType>CSV</FileType>
+    <!-- Can have multiple Search nodes -->
+    <MultiLog>false</MultiLog>
+    <!-- If this is true the FilePath is searched for files starting with FileName. -->
+    <Search>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Failures</DisplayName>
+      <!-- RegEx pattern-->
+      <RegEx2Match>(?i)failed</RegEx2Match>
+      <!-- Supported levels: DEBUG , INFO , WARN , ERROR , FATAL -->
+      <Level>ERROR</Level>
+    </Search>
+    <Search>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Errors</DisplayName>
+      <!-- RegEx pattern-->
+      <RegEx2Match>(?i)error</RegEx2Match>
+      <!-- Supported levels: DEBUG , INFO , WARN , ERROR , FATAL -->
+      <Level>ERROR</Level>
+    </Search>
+    <Search>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Shutdowns</DisplayName>
+      <!-- RegEx pattern-->
+      <RegEx2Match>(?i)(shutdown|shutting)</RegEx2Match>
+      <!-- Supported levels: DEBUG , INFO , WARN , ERROR , FATAL -->
+      <Level>WARN</Level>
+    </Search>
+  </Log>
+  <Log>
+    <isEM>true</isEM>
+    <isLD>true</isLD>
+    <DisplayName>Robot Main Log</DisplayName>
+    <!--Name of the file.-->
+    <FileName>log_</FileName>
+    <!--Path to the file.-->
+    <FilePath>\var\robot\logs\</FilePath>
+    <!--Supported types: TEXT , CSV-->
+    <FileType>TEXT</FileType>
+    <!--Can have multiple Search nodes-->
+    <MultiLog>true</MultiLog>
+    <!--If this is true the FilePath is searched for files starting with FileName.-->
+    <Search>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Warnings</DisplayName>
+      <!--RegEx pattern-->
+      <RegEx2Match>(?i)warning</RegEx2Match>
+      <!--Supported levels: DEBUG , INFO , WARN , ERROR , FATAL-->
+      <Level>WARN</Level>
+    </Search>
+    <Search>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Errors</DisplayName>
+      <!--RegEx pattern-->
+      <RegEx2Match>(?i)error</RegEx2Match>
+      <!--Supported levels: DEBUG , INFO , WARN , ERROR , FATAL-->
+      <Level>ERROR</Level>
+    </Search>
+    <Search>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Inside</DisplayName>
+      <!--RegEx pattern-->
+      <RegEx2Match>(?i)inside</RegEx2Match>
+      <!--Supported levels: DEBUG , INFO , WARN , ERROR , FATAL-->
+      <Level>ERROR</Level>
+    </Search>
+  </Log>
+  <!--<Log>
+    <isEM>true</isEM>
+    <isLD>true</isLD>
+    <DisplayName>Robot Main Logs (Robot Position)</DisplayName>
+    -->
+  <!-- Name of the file. -->
+  <!--
+    <FileName>log</FileName>
+    -->
+  <!-- Path to the file. -->
+  <!--
+    <FilePath>\var\robot\logs\</FilePath>
+    -->
+  <!-- Supported types: TEXT , CSV -->
+  <!--
+    <FileType>TEXT</FileType>
+    -->
+  <!-- Can have multiple Search nodes -->
+  <!--
+    <MultiLog>true</MultiLog>
+    -->
+  <!-- If this is true the FilePath is searched for files starting with FileName. -->
+  <!--
+    <Search>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+      <DisplayName>Robot At</DisplayName>
+      -->
+  <!-- RegEx pattern-->
+  <!--
+      <RegEx2Match>(?i)robot at</RegEx2Match>
+      -->
+  <!-- Supported levels: DEBUG , INFO , WARN , ERROR , FATAL -->
+  <!--
+      <Level>WARN</Level>
+    </Search>
+  </Log>-->
+</LogDetails>

@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SystemApps>
+  <Title>Installed Packages</Title>
+  <Path>\usr\local\apps</Path>
+  <FileName>control</FileName>
+</SystemApps>

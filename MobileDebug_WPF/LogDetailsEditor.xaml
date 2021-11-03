@@ -1,0 +1,32 @@
+﻿<Window x:Class="MobileDebug_WPF.LogDetailsEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MobileDebug_WPF"
+        mc:Ignorable="d"
+        Title="Log Search Editor" Height="450" Width="800" Closing="Window_Closing" Icon="Resources/favicon.png">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="28"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ToolBarTray>
+            <ToolBar>
+                <Button Content="Add Log"/>
+            </ToolBar>
+        </ToolBarTray>
+        <TreeView Grid.Row="1" x:Name="TvMain" HorizontalAlignment="Left" Height="409" Margin="10,5,0,-18" VerticalAlignment="Top" Width="776" ContextMenuOpening="TvMain_ContextMenuOpening">
+            <TreeView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem x:Name="MenuDeleteLog" Header="Delete Log" Click="MenuDeleteLog_Click"/>
+                    <MenuItem x:Name="MenuNewLog" Header="New Log" Click="MenuNewLog_Click"/>
+                    <MenuItem x:Name="MenuDeleteSearch" Header="Delete Search" Click="MenuDeleteSearch_Click"/>
+                    <MenuItem x:Name="MenuNewSearch" Header="New Search" Click="MenuNewSearch_Click"/>
+                    <MenuItem x:Name="MenuEdit" Header="Edit"/>
+                </ContextMenu>
+            </TreeView.ContextMenu>
+        </TreeView>
+
+    </Grid>
+</Window>

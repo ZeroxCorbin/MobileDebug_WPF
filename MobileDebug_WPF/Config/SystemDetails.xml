@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SystemDetails>
+  <Heading>
+    <Name>System Versions</Name>
+    <isEM>true</isEM>
+    <isLD>true</isLD>
+	  <Label>
+		  <Name>Serial Number: </Name>
+		  <FilePath>\etc\robotconfig\local\serNum</FilePath>
+		  <Description></Description>
+		  <isEM>true</isEM>
+		  <isLD>true</isLD>
+	  </Label>
+    <Label>
+      <Name>Repo Version: </Name>
+      <FilePath>\etc\robotconfig\repos</FilePath>
+      <Description>Text</Description>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>System Version (Short): </Name>
+      <FilePath>\etc\robotconfig\sysVer</FilePath>
+      <Description></Description>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>System Version (Long): </Name>
+      <FilePath>\etc\robotconfig\sysVerFull</FilePath>
+      <Description></Description>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>FPGA Version: </Name>
+      <FilePath>\\mnt\\status\\platform\\fpgaVer</FilePath>
+      <Description></Description>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+    </Label>
+  </Heading>
+
+  <Heading>
+    <Name>Platform Details</Name>
+    <isEM>true</isEM>
+    <isLD>true</isLD>
+    <Label>
+      <Name>Product Type: </Name>
+      <FilePath>\mnt\status\platform\productType</FilePath>
+      <Description></Description>
+      <isEM>true</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>Core Type: </Name>
+      <FilePath>\mnt\status\platform\coreType</FilePath>
+      <Description></Description>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+    </Label>
+
+  </Heading>
+
+  <Heading>
+    <Name>WiFi Details</Name>
+    <isEM>false</isEM>
+    <isLD>true</isLD>
+    <Label>
+      <Name>SSID: </Name>
+      <FilePath>\mnt\status\network\wireless\SSID</FilePath>
+      <Description></Description>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>Link State: </Name>
+      <FilePath>\mnt\status\network\wireless\link</FilePath>
+      <Description></Description>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>Frequency: </Name>
+      <FilePath>\mnt\status\network\wireless\freq</FilePath>
+      <Description></Description>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>Bitrate: </Name>
+      <FilePath>\mnt\status\network\wireless\bitrate</FilePath>
+      <Description></Description>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+    </Label>
+    <Label>
+      <Name>Quality: </Name>
+      <FilePath>\mnt\status\network\wireless\quality</FilePath>
+      <Description></Description>
+      <isEM>false</isEM>
+      <isLD>true</isLD>
+    </Label>
+  </Heading>
+
+</SystemDetails>

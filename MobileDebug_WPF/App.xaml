@@ -1,0 +1,9 @@
+﻿<Application x:Class="MobileDebug_WPF.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MobileDebug_WPF"
+             StartupUri="WindowViews/MainWindow.xaml">
+    <Application.Resources>
+         
+    </Application.Resources>
+</Application>

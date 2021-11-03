@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SystemMap>
+  <Section>
+    <Label>Cairn Info</Label>
+    <SearchText>CairnInfo</SearchText>
+    <HighlightColor>BLUE</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+  <Section>
+    <Label>Custom Info</Label>
+    <SearchText>CustomInfo:</SearchText>
+    <HighlightColor>GREEN</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+  <Section>
+    <Label>Config Section</Label>
+    <SearchText>ConfigSection</SearchText>
+    <HighlightColor>BLUE</HighlightColor>
+    <SubSection>true</SubSection>
+  </Section>
+  <Section>
+    <Label>Config Parameter</Label>
+    <SearchText>ConfigParam</SearchText>
+    <HighlightColor>ORANGE</HighlightColor>
+    <SubSection>true</SubSection>
+  </Section>
+  <Section>
+    <Label>Map Info</Label>
+    <SearchText>MapInfo:</SearchText>
+    <HighlightColor>ORANGE</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+  <Section>
+    <Label>Meta Info</Label>
+    <SearchText>MetaInfo:</SearchText>
+    <HighlightColor>RED</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+  <Section>
+    <Label>Route Info</Label>
+    <SearchText>RouteInfo:</SearchText>
+    <HighlightColor>BLUE</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+    <Section>
+    <Label>Schedule Info</Label>
+    <SearchText>SchedInfo:</SearchText>
+    <HighlightColor>RED</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+  <Section>
+    <Label>Task Info</Label>
+    <SearchText>TaskInfo:</SearchText>
+    <HighlightColor>GREEN</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+  <Section>
+    <Label>Task Description</Label>
+    <SearchText>TaskDesc</SearchText>
+    <HighlightColor>ORANGE</HighlightColor>
+    <SubSection>true</SubSection>
+  </Section>
+  <Section>
+    <Label>Arg. Description</Label>
+    <SearchText>ArgDesc</SearchText>
+    <HighlightColor>BLUE</HighlightColor>
+    <SubSection>true</SubSection>
+  </Section>
+  <Section>
+    <Label>Cairn</Label>
+    <SearchText>Cairn:</SearchText>
+    <HighlightColor>BLUE</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+  <Section>
+    <Label>Lines</Label>
+    <SearchText>LINES</SearchText>
+    <HighlightColor>RED</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+  <Section>
+    <Label>Points</Label>
+    <SearchText>DATA</SearchText>
+    <HighlightColor>RED</HighlightColor>
+    <SubSection>false</SubSection>
+  </Section>
+</SystemMap>
