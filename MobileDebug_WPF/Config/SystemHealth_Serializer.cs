@@ -28,22 +28,9 @@ namespace MobileDebug_WPF
         [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
         public partial class SystemHealth
         {
-
-            private SystemHealthHeading[] headingField;
-
             /// <remarks/>
             [System.Xml.Serialization.XmlElementAttribute("Heading")]
-            public SystemHealthHeading[] Heading
-            {
-                get
-                {
-                    return this.headingField;
-                }
-                set
-                {
-                    this.headingField = value;
-                }
-            }
+            public SystemHealthHeading[] Heading { get; set; }
         }
 
         /// <remarks/>
@@ -52,67 +39,18 @@ namespace MobileDebug_WPF
         [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
         public partial class SystemHealthHeading
         {
-
-            private string nameField;
-
-            private bool isEMField;
-
-            private bool isLDField;
-
-            private SystemHealthHeadingLabel[] labelField;
+            /// <remarks/>
+            public string Name { get; set; }
 
             /// <remarks/>
-            public string Name
-            {
-                get
-                {
-                    return this.nameField;
-                }
-                set
-                {
-                    this.nameField = value;
-                }
-            }
+            public bool isEM { get; set; }
 
             /// <remarks/>
-            public bool isEM
-            {
-                get
-                {
-                    return this.isEMField;
-                }
-                set
-                {
-                    this.isEMField = value;
-                }
-            }
-
-            /// <remarks/>
-            public bool isLD
-            {
-                get
-                {
-                    return this.isLDField;
-                }
-                set
-                {
-                    this.isLDField = value;
-                }
-            }
+            public bool isLD { get; set; }
 
             /// <remarks/>
             [System.Xml.Serialization.XmlElementAttribute("Label")]
-            public SystemHealthHeadingLabel[] Label
-            {
-                get
-                {
-                    return this.labelField;
-                }
-                set
-                {
-                    this.labelField = value;
-                }
-            }
+            public SystemHealthHeadingLabel[] Label { get; set; }
         }
 
         /// <remarks/>
@@ -121,156 +59,35 @@ namespace MobileDebug_WPF
         [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
         public partial class SystemHealthHeadingLabel
         {
-
-            private string nameField;
-
-            private string filePathField;
-
-            private string descriptionField;
-
-            private string tailField;
-
-            private decimal threshold_ldField;
-
-            private decimal threshold_emField;
-
-            private bool greaterField;
-
-            private decimal multiplierField;
-
-            private bool isEMField;
-
-            private bool isLDField;
+            /// <remarks/>
+            public string Name { get; set; }
 
             /// <remarks/>
-            public string Name
-            {
-                get
-                {
-                    return this.nameField;
-                }
-                set
-                {
-                    this.nameField = value;
-                }
-            }
+            public string FilePath { get; set; }
 
             /// <remarks/>
-            public string FilePath
-            {
-                get
-                {
-                    return this.filePathField;
-                }
-                set
-                {
-                    this.filePathField = value;
-                }
-            }
+            public string Description { get; set; }
 
             /// <remarks/>
-            public string Description
-            {
-                get
-                {
-                    return this.descriptionField;
-                }
-                set
-                {
-                    this.descriptionField = value;
-                }
-            }
+            public string Tail { get; set; }
 
             /// <remarks/>
-            public string Tail
-            {
-                get
-                {
-                    return this.tailField;
-                }
-                set
-                {
-                    this.tailField = value;
-                }
-            }
+            public decimal Threshold_ld { get; set; }
 
             /// <remarks/>
-            public decimal Threshold_ld
-            {
-                get
-                {
-                    return this.threshold_ldField;
-                }
-                set
-                {
-                    this.threshold_ldField = value;
-                }
-            }
+            public decimal Threshold_em { get; set; }
 
             /// <remarks/>
-            public decimal Threshold_em
-            {
-                get
-                {
-                    return this.threshold_emField;
-                }
-                set
-                {
-                    this.threshold_emField = value;
-                }
-            }
+            public bool Greater { get; set; }
 
             /// <remarks/>
-            public bool Greater
-            {
-                get
-                {
-                    return this.greaterField;
-                }
-                set
-                {
-                    this.greaterField = value;
-                }
-            }
+            public decimal Multiplier { get; set; }
 
             /// <remarks/>
-            public decimal Multiplier
-            {
-                get
-                {
-                    return this.multiplierField;
-                }
-                set
-                {
-                    this.multiplierField = value;
-                }
-            }
+            public bool isEM { get; set; }
 
             /// <remarks/>
-            public bool isEM
-            {
-                get
-                {
-                    return this.isEMField;
-                }
-                set
-                {
-                    this.isEMField = value;
-                }
-            }
-
-            /// <remarks/>
-            public bool isLD
-            {
-                get
-                {
-                    return this.isLDField;
-                }
-                set
-                {
-                    this.isLDField = value;
-                }
-            }
+            public bool isLD { get; set; }
         }
 
 

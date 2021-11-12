@@ -13,7 +13,7 @@ namespace MobileDebug_WPF.Core
 #nullable enable
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool Set<T>(ref T? field, T? newValue = default, [CallerMemberName] string? propertyName = null)
+        protected bool Set<T>(ref T field, T newValue, [CallerMemberName] string? propertyName = null)
         {
             if (EqualityComparer<T>.Default.Equals(field!, newValue!))
             {

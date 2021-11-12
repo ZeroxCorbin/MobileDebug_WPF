@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ControlzEx.Theming;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -15,14 +16,18 @@ namespace MobileDebug_WPF
     public partial class App : Application
     {
         public static SimpleDataBase Settings;
-        public static string AppRootDirectory => System.AppDomain.CurrentDomain.BaseDirectory;
-        public static string UserDataDirectory => System.AppDomain.CurrentDomain.BaseDirectory + "UserData\\";
+
+#if DEBUG
+        public static string RootDirectory { get; set; } = Path.Join(System.IO.Directory.GetCurrentDirectory(), "\\42Nexus\\MobileDebug_WPF\\");
+#else        
+        public static string RootDirectory { get; set; } = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "\\42Nexus\\MobileDebug_WPF\\");
+#endif
+        public static string WorkingDirectory => Path.Join(RootDirectory, "Working\\");
+        public static string UserDataDirectory => Path.Join(RootDirectory , "UserData\\");
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
-
 
             if (!Directory.Exists(UserDataDirectory))
             {
@@ -30,7 +35,7 @@ namespace MobileDebug_WPF
                 Directory.CreateDirectory(UserDataDirectory);
             }
 
-            FileStream filestream = new FileStream(UserDataDirectory + "log.txt", FileMode.Append);
+            FileStream filestream = new FileStream(Path.Join(UserDataDirectory, "\\log.txt"), FileMode.Append);
             var streamwriter = new StreamWriter(filestream)
             {
                 AutoFlush = true
@@ -38,16 +43,18 @@ namespace MobileDebug_WPF
             Console.SetOut(streamwriter);
             Console.SetError(streamwriter);
 
-            Settings = new SimpleDataBase().Init($"{UserDataDirectory}ApplicationSettings.sqlite", false);
+            Settings = new SimpleDataBase().Init(Path.Join(UserDataDirectory, "\\ApplicationSettings.sqlite"), false);
             if (Settings == null)
             {
-                Console.WriteLine($"Could not initialize the application settings database: {UserDataDirectory}ApplicationSettings.sqlite");
+                Console.WriteLine($"Could not initialize the application settings database: {Path.Join(UserDataDirectory, "\\ApplicationSettings.sqlite")}");
                 throw new Exception();
             }
             else
             {
                 Console.WriteLine("Application settings loaded.");
             }
+            
+            ThemeManager.Current.ChangeTheme(this, Settings.GetValue("App.Theme", "Light.Steel"));
         }
         public App()
         {

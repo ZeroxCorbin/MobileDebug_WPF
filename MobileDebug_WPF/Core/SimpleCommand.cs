@@ -10,15 +10,15 @@ namespace MobileDebug_WPF.Core
     public class SimpleCommand<T> : ICommand
     {
 #nullable enable
-        public SimpleCommand(Func<T?, bool>? canExecute = null, Action<T?>? execute = null)
+        public SimpleCommand(Func<T, bool> canExecute , Action<T> execute)
         {
             this.CanExecuteDelegate = canExecute;
             this.ExecuteDelegate = execute;
         }
 
-        public Func<T?, bool>? CanExecuteDelegate { get; }
+        public Func<T, bool> CanExecuteDelegate { get; }
 
-        public Action<T?>? ExecuteDelegate { get; }
+        public Action<T> ExecuteDelegate { get; }
 
 #if NET5_0_OR_GREATER
         public bool CanExecute(object? parameter)

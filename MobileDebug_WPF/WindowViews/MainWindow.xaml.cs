@@ -28,13 +28,15 @@ using System.Xml;
 using System.Windows.Threading;
 using static FileSearch.FileSearch;
 using OxyPlot.Legends;
+using ControlzEx.Theming;
+using MahApps.Metro.Controls;
 
 namespace MobileDebug_WPF
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : MetroWindow
     {
         public class LogDetails_class
         {
@@ -44,7 +46,6 @@ namespace MobileDebug_WPF
             public LogDetails_Serializer.LogDetailsLog Log { get; set; }
         }
 
-        private bool FormLoading { get; set; } = true;
         private Brush ButtonFace { get; set; }
 
         //Set by CheckProductType() if the debug data is for an EM.
@@ -116,7 +117,17 @@ namespace MobileDebug_WPF
         private string SearchConfigurationPath => System.AppDomain.CurrentDomain.BaseDirectory + "Config\\";
         public MainWindow()
         {
+            //ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
+            ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
+            ThemeManager.Current.SyncTheme();
+
             InitializeComponent();
+
+            DataContext = new WindowViewModel.MainWindowViewModel(MahApps.Metro.Controls.Dialogs.DialogCoordinator.Instance);
+            SystemInformationExpander.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).SystemInformation;
+
+            _ = SetBinding(WidthProperty, new Binding("Width") { Source = DataContext, Mode = BindingMode.TwoWay });
+            _ = SetBinding(HeightProperty, new Binding("Height") { Source = DataContext, Mode = BindingMode.TwoWay });
 
             ButtonFace = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFDDDDDD"));
 
@@ -152,7 +163,6 @@ namespace MobileDebug_WPF
             MenuSettings_Search.Items.Add(mi);
 
             ExpTOC.IsExpanded = App.Settings.GetValue("ExpanderTOC", false);
-            ExpSystemInfo.IsExpanded = App.Settings.GetValue("ExpanderSystemInfo", false);
 
             tabCrashLogs.Visibility = Visibility.Collapsed;
             tabBatteryLogs.Visibility = Visibility.Collapsed;
@@ -162,7 +172,6 @@ namespace MobileDebug_WPF
             tabMapImage.Visibility = Visibility.Collapsed;
             tabMapWiFiHeat.Visibility = Visibility.Collapsed;
 
-            FormLoading = false;
         }
 
         private bool CheckDxMobileMapPath()
@@ -251,11 +260,11 @@ namespace MobileDebug_WPF
             }
 
             UpdateStatus("Loading system data...");
-            InvokeThis(new Action(() => { LoadSystemHealth(); }));
+            //InvokeThis(new Action(() => { LoadSystemHealth(); }));
 
-            InvokeThis(new Action(() => { LoadSystemDetails(); }));
+            //InvokeThis(new Action(() => { LoadSystemDetails(); }));
 
-            InvokeThis(new Action(() => { LoadSystemApps(); }));
+            //InvokeThis(new Action(() => { LoadSystemApps(); }));
 
             UpdateStatus("Loading Table of Contents...");
             InvokeThis(new Action(() => { ReadTOC(); }));
@@ -427,7 +436,7 @@ namespace MobileDebug_WPF
 
         private void ClearForm(bool removeOldFiles)
         {
-            TvSystemData.Items.Clear();
+            //TvSystemData.Items.Clear();
 
             stkTOC.Children.Clear();
 
@@ -555,163 +564,163 @@ namespace MobileDebug_WPF
             if (GetLineFromFile(WorkingPath + "mnt\\status\\platform\\productType").Contains("EM")) IsEM = true;
             else IsEM = false;
         }
-        private void LoadSystemHealth()
-        {
-            SystemHealth_Serializer.SystemHealth serial = SystemHealth_Serializer.Load($"{App.UserDataDirectory}SystemHealth.xml");
+        //private void LoadSystemHealth()
+        //{
+        //    SystemHealth_Serializer.SystemHealth serial = SystemHealth_Serializer.Load($"{App.UserDataDirectory}SystemHealth.xml");
 
-            foreach (SystemHealth_Serializer.SystemHealthHeading head in serial.Heading)
-            {
-                if (IsEM && !head.isEM) continue;//If the data is from an EM and the config file indicates the data is not relevant to an EM, the section is ignored.
-                if (!IsEM && !head.isLD) continue;
+        //    foreach (SystemHealth_Serializer.SystemHealthHeading head in serial.Heading)
+        //    {
+        //        if (IsEM && !head.isEM) continue;//If the data is from an EM and the config file indicates the data is not relevant to an EM, the section is ignored.
+        //        if (!IsEM && !head.isLD) continue;
 
-                TreeViewItem tviHeading = new TreeViewItem()
-                {
-                    Header = head.Name,
-                    ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                };
-                TvSystemData.Items.Add(tviHeading);
+        //        TreeViewItem tviHeading = new TreeViewItem()
+        //        {
+        //            Header = head.Name,
+        //            ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
+        //        };
+        //        TvSystemData.Items.Add(tviHeading);
 
-                foreach (SystemHealth_Serializer.SystemHealthHeadingLabel label in head.Label)
-                {
-                    if (IsEM && !label.isEM) continue;
-                    if (!IsEM && !label.isLD) continue;
+        //        foreach (SystemHealth_Serializer.SystemHealthHeadingLabel label in head.Label)
+        //        {
+        //            if (IsEM && !label.isEM) continue;
+        //            if (!IsEM && !label.isLD) continue;
 
-                    string line = GetLineFromFile(WorkingPath + label.FilePath);
-                    double res = 0;
-                    if (line != null)
-                        res = Convert.ToDouble(line) * Convert.ToDouble(label.Multiplier);
+        //            string line = GetLineFromFile(WorkingPath + label.FilePath);
+        //            double res = 0;
+        //            if (line != null)
+        //                res = Convert.ToDouble(line) * Convert.ToDouble(label.Multiplier);
 
-                    TextBox txtLabel = new TextBox()
-                    {
-                        Text = label.Name + res.ToString() + label.Tail,
-                        ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                        IsReadOnly = true,
-                        BorderThickness = new Thickness(0),
-                        Margin = new Thickness(3)
-                    };
-                    TreeViewItem tviLabel = new TreeViewItem()
-                    {
-                        Header = txtLabel,
-                        ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                    };
-                    tviHeading.Items.Add(tviLabel);
+        //            TextBox txtLabel = new TextBox()
+        //            {
+        //                Text = label.Name + res.ToString() + label.Tail,
+        //                ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
+        //                IsReadOnly = true,
+        //                BorderThickness = new Thickness(0),
+        //                Margin = new Thickness(3)
+        //            };
+        //            TreeViewItem tviLabel = new TreeViewItem()
+        //            {
+        //                Header = txtLabel,
+        //                ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
+        //            };
+        //            tviHeading.Items.Add(tviLabel);
 
-                    double thres;
+        //            double thres;
 
-                    if (IsEM) thres = Convert.ToDouble(label.Threshold_em);
-                    else thres = Convert.ToDouble(label.Threshold_ld);
+        //            if (IsEM) thres = Convert.ToDouble(label.Threshold_em);
+        //            else thres = Convert.ToDouble(label.Threshold_ld);
 
-                    if (label.Greater)
-                    {
-                        if (res > thres)
-                            txtLabel.Background = Brushes.LightYellow;
-                        else
-                            txtLabel.Background = Brushes.LightGreen;
-                    }
-                    else
-                    {
-                        if (res < thres)
-                            txtLabel.Background = Brushes.LightYellow;
-                        else
-                            txtLabel.Background = Brushes.LightGreen;
-                    }
+        //            if (label.Greater)
+        //            {
+        //                if (res > thres)
+        //                    txtLabel.Background = Brushes.LightYellow;
+        //                else
+        //                    txtLabel.Background = Brushes.LightGreen;
+        //            }
+        //            else
+        //            {
+        //                if (res < thres)
+        //                    txtLabel.Background = Brushes.LightYellow;
+        //                else
+        //                    txtLabel.Background = Brushes.LightGreen;
+        //            }
 
-                }
+        //        }
 
-                tviHeading.IsExpanded = true;
-            }
-        }//Updated
-        private void LoadSystemDetails()
-        {
-            SystemDetails_Serializer.SystemDetails serial = SystemDetails_Serializer.Load($"{App.UserDataDirectory}SystemDetails.xml");
+        //        tviHeading.IsExpanded = true;
+        //    }
+        //}//Updated
+        //private void LoadSystemDetails()
+        //{
+        //    SystemDetails_Serializer.SystemDetails serial = SystemDetails_Serializer.Load($"{App.UserDataDirectory}SystemDetails.xml");
 
-            foreach (SystemDetails_Serializer.SystemDetailsHeading head in serial.Heading)
-            {
-                if (IsEM && !head.isEM) continue;//If the data is from an EM and the config file indicates the data is not relevant to an EM, the section is ignored.
-                if (!IsEM && !head.isLD) continue;
+        //    foreach (SystemDetails_Serializer.SystemDetailsHeading head in serial.Heading)
+        //    {
+        //        if (IsEM && !head.isEM) continue;//If the data is from an EM and the config file indicates the data is not relevant to an EM, the section is ignored.
+        //        if (!IsEM && !head.isLD) continue;
 
-                TreeViewItem tviHeading = new TreeViewItem()
-                {
-                    Header = head.Name,
-                    ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                };
-                TvSystemData.Items.Add(tviHeading);
+        //        TreeViewItem tviHeading = new TreeViewItem()
+        //        {
+        //            Header = head.Name,
+        //            ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
+        //        };
+        //        TvSystemData.Items.Add(tviHeading);
 
-                foreach (SystemDetails_Serializer.SystemDetailsHeadingLabel label in head.Label)
-                {
-                    if (IsEM && !label.isEM) continue;
-                    if (!IsEM && !label.isLD) continue;
+        //        foreach (SystemDetails_Serializer.SystemDetailsHeadingLabel label in head.Label)
+        //        {
+        //            if (IsEM && !label.isEM) continue;
+        //            if (!IsEM && !label.isLD) continue;
 
-                    string line = GetLineFromFile(WorkingPath + label.FilePath);
-                    TextBox txtLabel = new TextBox()
-                    {
-                        IsReadOnly = true,
-                        ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                        BorderThickness = new Thickness(0),
-                        Margin = new Thickness(3)
-                    };
+        //            string line = GetLineFromFile(WorkingPath + label.FilePath);
+        //            TextBox txtLabel = new TextBox()
+        //            {
+        //                IsReadOnly = true,
+        //                ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
+        //                BorderThickness = new Thickness(0),
+        //                Margin = new Thickness(3)
+        //            };
 
-                    if (line != null)
-                        txtLabel.Text = label.Name + line.Replace("\t", " , ");
-                    else
-                        txtLabel.Text = "File Not Found";
+        //            if (line != null)
+        //                txtLabel.Text = label.Name + line.Replace("\t", " , ");
+        //            else
+        //                txtLabel.Text = "File Not Found";
 
-                    TreeViewItem tviLabel = new TreeViewItem()
-                    {
-                        Header = txtLabel,
-                        ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                    };
-                    tviHeading.Items.Add(tviLabel);
-                }
+        //            TreeViewItem tviLabel = new TreeViewItem()
+        //            {
+        //                Header = txtLabel,
+        //                ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
+        //            };
+        //            tviHeading.Items.Add(tviLabel);
+        //        }
 
-                tviHeading.IsExpanded = true;
-            }
-        }//Updated
-        private void LoadSystemApps()
-        {
-            SystemApps_Serializer.SystemApps serial = SystemApps_Serializer.Load($"{App.UserDataDirectory}SystemApps.xml");
+        //        tviHeading.IsExpanded = true;
+        //    }
+        //}//Updated
+        //private void LoadSystemApps()
+        //{
+        //    SystemApps_Serializer.SystemApps serial = SystemApps_Serializer.Load($"{App.UserDataDirectory}SystemApps.xml");
 
-            DirectoryInfo di = new DirectoryInfo(WorkingPath + serial.Path);
+        //    DirectoryInfo di = new DirectoryInfo(WorkingPath + serial.Path);
 
-            TreeViewItem tviHeading = new TreeViewItem()
-            {
-                Header = serial.Title,
-            };
-            TvSystemData.Items.Add(tviHeading);
+        //    TreeViewItem tviHeading = new TreeViewItem()
+        //    {
+        //        Header = serial.Title,
+        //    };
+        //    TvSystemData.Items.Add(tviHeading);
 
-            foreach (DirectoryInfo dir in di.GetDirectories())
-            {
-                foreach (FileInfo fi in dir.GetFiles())
-                {
-                    if (fi.Name == serial.FileName)
-                    {
-                        using (StreamReader file = new System.IO.StreamReader(fi.FullName))
-                        {
-                            string line = file.ReadLine();
+        //    foreach (DirectoryInfo dir in di.GetDirectories())
+        //    {
+        //        foreach (FileInfo fi in dir.GetFiles())
+        //        {
+        //            if (fi.Name == serial.FileName)
+        //            {
+        //                using (StreamReader file = new System.IO.StreamReader(fi.FullName))
+        //                {
+        //                    string line = file.ReadLine();
 
-                            TextBox txtLabel = new TextBox() { Text = line, IsReadOnly = true, BorderThickness = new Thickness(0), Margin = new Thickness(3) };
-                            TreeViewItem tviLabel = new TreeViewItem()
-                            {
-                                Header = txtLabel,
-                            };
-                            tviHeading.Items.Add(tviLabel);
+        //                    TextBox txtLabel = new TextBox() { Text = line, IsReadOnly = true, BorderThickness = new Thickness(0), Margin = new Thickness(3) };
+        //                    TreeViewItem tviLabel = new TreeViewItem()
+        //                    {
+        //                        Header = txtLabel,
+        //                    };
+        //                    tviHeading.Items.Add(tviLabel);
 
-                            while ((line = file.ReadLine()) != null)
-                            {
-                                TextBox txtLabel1 = new TextBox() { Text = line, IsReadOnly = true, BorderThickness = new Thickness(0), Margin = new Thickness(3) };
-                                TreeViewItem tviLabel1 = new TreeViewItem()
-                                {
-                                    Header = txtLabel1,
-                                };
-                                tviLabel.Items.Add(tviLabel1);
-                            }
-                        }
-                    }
-                }
-            }
+        //                    while ((line = file.ReadLine()) != null)
+        //                    {
+        //                        TextBox txtLabel1 = new TextBox() { Text = line, IsReadOnly = true, BorderThickness = new Thickness(0), Margin = new Thickness(3) };
+        //                        TreeViewItem tviLabel1 = new TreeViewItem()
+        //                        {
+        //                            Header = txtLabel1,
+        //                        };
+        //                        tviLabel.Items.Add(tviLabel1);
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
 
-            tviHeading.IsExpanded = true;
-        }//Updated
+        //    tviHeading.IsExpanded = true;
+        //}//Updated
 
         //Table of Contents TAB
         private void ReadTOC()
@@ -2565,7 +2574,7 @@ namespace MobileDebug_WPF
             };
             MenuFile.Items.Add(sep);
 
-            UpdateHistoryMenuItems(App.Settings.GetValue("FileHistory", new List<FileHistory>()));
+            //UpdateHistoryMenuItems(App.Settings.GetValue("FileHistory", new List<FileHistory>()));
         }
         private void Window_LocationChanged(object sender, EventArgs e)
         {
