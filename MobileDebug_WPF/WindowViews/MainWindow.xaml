@@ -41,7 +41,7 @@
                 </mah:DropDownButton.ItemContainerStyle>
             </mah:DropDownButton>
         </StackPanel>
-         <ToolBar Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3">
+         <!--<ToolBar Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3">
             <Menu>
                 <MenuItem x:Name="MenuFile" Header="File"/>
                 <MenuItem x:Name="MenuSettings" Header="Settings">
@@ -53,11 +53,12 @@
 
             <Label Content="Status: " Margin="20,0,0,0" VerticalContentAlignment="Center"/>
             <ListBox x:Name="LstStatusList" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" ScrollViewer.VerticalScrollBarVisibility="Visible" Margin="0,1" BorderBrush="{x:Null}"/>
-        </ToolBar>
+        </ToolBar>-->
 
         <WindowViews:SystemInformationView x:Name="SystemInformationExpander" Grid.Row="1" Grid.Column="0"/>
-
-        <Expander x:Name="ExpTOC" Grid.Row="1" Grid.Column="1" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3" Collapsed="ExpTOC_Collapsed" Expanded="ExpTOC_Expanded">
+        <WindowViews:TableOfContentsView x:Name="TableOfContentsExpander" Grid.Row="1" Grid.Column="1"/>
+        
+        <!--<Expander x:Name="ExpTOC" Grid.Row="1" Grid.Column="1" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3" Collapsed="ExpTOC_Collapsed" Expanded="ExpTOC_Expanded">
             <Expander.Header>
                 <TextBlock Text="Table of Contents" RenderTransformOrigin="0.5,0.5" Margin="0,0,0,0" Width="Auto">
                     <TextBlock.LayoutTransform>
@@ -70,7 +71,7 @@
             <ScrollViewer>
                 <StackPanel x:Name="stkTOC" Margin="10"/>
             </ScrollViewer>
-        </Expander>
+        </Expander>-->
         
         <mah:MetroTabControl Grid.Row="1" Grid.Column="3" x:Name="tbcMain" Margin="3" >
             <mah:MetroTabItem x:Name="tabLogs" Header="Logs">

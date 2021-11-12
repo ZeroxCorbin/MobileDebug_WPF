@@ -125,6 +125,7 @@ namespace MobileDebug_WPF
 
             DataContext = new WindowViewModel.MainWindowViewModel(MahApps.Metro.Controls.Dialogs.DialogCoordinator.Instance);
             SystemInformationExpander.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).SystemInformation;
+            TableOfContentsExpander.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).TableOfContents;
 
             _ = SetBinding(WidthProperty, new Binding("Width") { Source = DataContext, Mode = BindingMode.TwoWay });
             _ = SetBinding(HeightProperty, new Binding("Height") { Source = DataContext, Mode = BindingMode.TwoWay });
@@ -154,15 +155,15 @@ namespace MobileDebug_WPF
 
             CheckDxMobileMapPath();
 
-            MenuItem mi = new MenuItem()
-            {
-                Header = "Log Searches",
-                Tag = App.UserDataDirectory + "LogDetails.xml",
-            };
-            mi.Click += MenuSettings_Search_Click;
-            MenuSettings_Search.Items.Add(mi);
+            //MenuItem mi = new MenuItem()
+            //{
+            //    Header = "Log Searches",
+            //    Tag = App.UserDataDirectory + "LogDetails.xml",
+            //};
+            //mi.Click += MenuSettings_Search_Click;
+            //MenuSettings_Search.Items.Add(mi);
 
-            ExpTOC.IsExpanded = App.Settings.GetValue("ExpanderTOC", false);
+           // ExpTOC.IsExpanded = App.Settings.GetValue("ExpanderTOC", false);
 
             tabCrashLogs.Visibility = Visibility.Collapsed;
             tabBatteryLogs.Visibility = Visibility.Collapsed;
@@ -235,7 +236,7 @@ namespace MobileDebug_WPF
         }
         private void RunThread()
         {
-            InvokeThis(new Action(() => { MenuFile.IsEnabled = false; }));
+            //InvokeThis(new Action(() => { MenuFile.IsEnabled = false; }));
 
             InvokeThis(new Action(() => { ClearForm(true); }));
 
@@ -244,7 +245,7 @@ namespace MobileDebug_WPF
                 UpdateStatus("Extracting Files...");
                 if (!ExtractFile())
                 {
-                    InvokeThis(new Action(() => { MenuFile.IsEnabled = true; }));
+                    //InvokeThis(new Action(() => { MenuFile.IsEnabled = true; }));
                     UpdateStatus("Extraction Error!");
                 }
             }
@@ -259,15 +260,15 @@ namespace MobileDebug_WPF
                 return;
             }
 
-            UpdateStatus("Loading system data...");
+           // UpdateStatus("Loading system data...");
             //InvokeThis(new Action(() => { LoadSystemHealth(); }));
 
             //InvokeThis(new Action(() => { LoadSystemDetails(); }));
 
             //InvokeThis(new Action(() => { LoadSystemApps(); }));
 
-            UpdateStatus("Loading Table of Contents...");
-            InvokeThis(new Action(() => { ReadTOC(); }));
+            //UpdateStatus("Loading Table of Contents...");
+            //InvokeThis(new Action(() => { ReadTOC(); }));
 
             UpdateStatus("Setting up log searches...");
             InvokeThis(new Action(() => { SetupLogs(); }));
@@ -367,10 +368,10 @@ namespace MobileDebug_WPF
 
                 Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { DrawMapApplyToImage(s); }), bmp);
 
-                UpdateStatus("Setting up Map menu...");
-                Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { SetupMapMenu(s); }), mapPath);
+                //UpdateStatus("Setting up Map menu...");
+               // Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) => { SetupMapMenu(s); }), mapPath);
 
-                InvokeThis(new Action(() => { MenuFile.IsEnabled = true; }));
+                //InvokeThis(new Action(() => { MenuFile.IsEnabled = true; }));
             }
             UpdateStatus("Complete!");
         }
@@ -383,7 +384,7 @@ namespace MobileDebug_WPF
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) =>
             {
 
-                LstStatusList.Items.Insert(0, s);
+                //LstStatusList.Items.Insert(0, s);
             }), msg);
             //Thread.Sleep(1);
         }
@@ -438,7 +439,7 @@ namespace MobileDebug_WPF
         {
             //TvSystemData.Items.Clear();
 
-            stkTOC.Children.Clear();
+            //stkTOC.Children.Clear();
 
             flpLogs.Children.Clear();
             rtbLogLines.Document.Blocks.Clear();
@@ -489,10 +490,10 @@ namespace MobileDebug_WPF
             ImgMapWiFiHeatBorder.Child = null;
             HeatPoints.Clear();
 
-            MenuMap.Visibility = Visibility.Collapsed;
-            MenuMap.Header = "Map";
-            MenuMap.Tag = string.Empty;
-            MenuMap.Items.Clear();
+            //MenuMap.Visibility = Visibility.Collapsed;
+            //MenuMap.Header = "Map";
+            //MenuMap.Tag = string.Empty;
+            //MenuMap.Items.Clear();
 
             IsEM = false;
 
@@ -723,51 +724,51 @@ namespace MobileDebug_WPF
         //}//Updated
 
         //Table of Contents TAB
-        private void ReadTOC()
-        {
-            using (StreamReader file = new StreamReader(WorkingPath + "toc.txt"))
-            {
-                file.ReadLine();
-                file.ReadLine();
-                file.ReadLine();
+        //private void ReadTOC()
+        //{
+        //    using (StreamReader file = new StreamReader(WorkingPath + "toc.txt"))
+        //    {
+        //        file.ReadLine();
+        //        file.ReadLine();
+        //        file.ReadLine();
 
 
-                string line;
-                while ((line = file.ReadLine()) != null)
-                {
-                    string[] row = new string[3];
+        //        string line;
+        //        while ((line = file.ReadLine()) != null)
+        //        {
+        //            string[] row = new string[3];
 
-                    int i = line.LastIndexOf(' ');
-                    row[0] = line.Substring(i + 1);
+        //            int i = line.LastIndexOf(' ');
+        //            row[0] = line.Substring(i + 1);
 
-                    if (row[0].ToString().EndsWith("/")) continue;
-                    if (row[0].ToString().StartsWith("-")) break;
+        //            if (row[0].ToString().EndsWith("/")) continue;
+        //            if (row[0].ToString().StartsWith("-")) break;
 
-                    row[1] = line.Substring(i - 18, 10);
-                    row[2] = line.Substring(i - 7, 5);
+        //            row[1] = line.Substring(i - 18, 10);
+        //            row[2] = line.Substring(i - 7, 5);
 
-                    Hyperlink hyp = new Hyperlink()
-                    {
-                        Tag = new Uri(WorkingPath + row[0]).ToString(),
-                    };
-                    hyp.Inlines.Add(row[0]);
-                    hyp.Click += TOCHyperlink_Click;
+        //            Hyperlink hyp = new Hyperlink()
+        //            {
+        //                Tag = new Uri(WorkingPath + row[0]).ToString(),
+        //            };
+        //            hyp.Inlines.Add(row[0]);
+        //            hyp.Click += TOCHyperlink_Click;
 
-                    Label lbl = new Label()
-                    {
-                        Content = hyp,
-                    };
-                    stkTOC.Children.Add(lbl);
+        //            Label lbl = new Label()
+        //            {
+        //                Content = hyp,
+        //            };
+        //            stkTOC.Children.Add(lbl);
 
-                }
-            }
-        }//Updated
-        private void TOCHyperlink_Click(object sender, RoutedEventArgs e)
-        {
-            Hyperlink hl = (Hyperlink)sender;
-            if (hl.Tag is string s)
-                System.Diagnostics.Process.Start(s);
-        }
+        //        }
+        //    }
+        //}//Updated
+        //private void TOCHyperlink_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Hyperlink hl = (Hyperlink)sender;
+        //    if (hl.Tag is string s)
+        //        System.Diagnostics.Process.Start(s);
+        //}
 
         //private void tsbSearchTOC_Click(object sender, EventArgs e)
         //{
@@ -2331,62 +2332,62 @@ namespace MobileDebug_WPF
             return bitmapImage;
         }
 
-        private void SetupMapMenu(string mapPath)
-        {
-            if (HasMap)
-            {
-                MenuMap.Header = $"Map ({System.IO.Path.GetFileNameWithoutExtension(mapPath)})";
-                MenuMap.Visibility = Visibility.Visible;
-                MenuMap.Tag = mapPath;
+        //private void SetupMapMenu(string mapPath)
+        //{
+        //    if (HasMap)
+        //    {
+        //        MenuMap.Header = $"Map ({System.IO.Path.GetFileNameWithoutExtension(mapPath)})";
+        //        MenuMap.Visibility = Visibility.Visible;
+        //        MenuMap.Tag = mapPath;
 
-                MenuItem save = new MenuItem()
-                {
-                    Header = "Save As",
-                    Tag = mapPath
-                };
-                save.Click += SaveMapFile_Click;
-                MenuMap.Items.Add(save);
+        //        MenuItem save = new MenuItem()
+        //        {
+        //            Header = "Save As",
+        //            Tag = mapPath
+        //        };
+        //        save.Click += SaveMapFile_Click;
+        //        MenuMap.Items.Add(save);
 
-                //if (HeatPoints.Count() > 0)
-                //{
-                //    MenuItem heat = new MenuItem()
-                //    {
-                //        Header = $"Create WiFi Heat Map: {HeatPoints.Count()} Points \u2248{(HeatPoints.Count() / 15) / 60} min.",
-                //        Tag = mapPath
-                //    };
-                //    heat.Click += CreateHeatMap_Click;
-                //    MenuMap.Items.Add(heat);
-                //}
+        //        //if (HeatPoints.Count() > 0)
+        //        //{
+        //        //    MenuItem heat = new MenuItem()
+        //        //    {
+        //        //        Header = $"Create WiFi Heat Map: {HeatPoints.Count()} Points \u2248{(HeatPoints.Count() / 15) / 60} min.",
+        //        //        Tag = mapPath
+        //        //    };
+        //        //    heat.Click += CreateHeatMap_Click;
+        //        //    MenuMap.Items.Add(heat);
+        //        //}
 
-                //MenuItem dxMM;
-                //if (CheckDxMobileMapPath())
-                //{
-                //    dxMM = new MenuItem()
-                //    {
-                //        Header = "Create DXMobileMap Database",
-                //    };
-                //    dxMM.Click += MapDBCreateFile_Click;
-                //}
-                //else
-                //{
-                //    dxMM = new MenuItem()
-                //    {
-                //        Header = "Get DXMobileMap",
-                //    };
-                //    dxMM.Click += MapDBGetDxMobileMap_Click;
-                //}
+        //        //MenuItem dxMM;
+        //        //if (CheckDxMobileMapPath())
+        //        //{
+        //        //    dxMM = new MenuItem()
+        //        //    {
+        //        //        Header = "Create DXMobileMap Database",
+        //        //    };
+        //        //    dxMM.Click += MapDBCreateFile_Click;
+        //        //}
+        //        //else
+        //        //{
+        //        //    dxMM = new MenuItem()
+        //        //    {
+        //        //        Header = "Get DXMobileMap",
+        //        //    };
+        //        //    dxMM.Click += MapDBGetDxMobileMap_Click;
+        //        //}
 
-                //MenuMap.Items.Add(dxMM);
-            }
-            else
-            {
-                MenuMap.Header = "Map";
-                MenuMap.Visibility = Visibility.Collapsed;
-                MenuMap.Tag = string.Empty;
+        //        //MenuMap.Items.Add(dxMM);
+        //    }
+        //    else
+        //    {
+        //        MenuMap.Header = "Map";
+        //        MenuMap.Visibility = Visibility.Collapsed;
+        //        MenuMap.Tag = string.Empty;
 
-                MenuMap.Items.Clear();
-            }
-        }
+        //        MenuMap.Items.Clear();
+        //    }
+        //}
 
         private void CreateHeatMap_Click(object sender, RoutedEventArgs e)
         {
@@ -2532,7 +2533,7 @@ namespace MobileDebug_WPF
             {
                 WorkingPath = s + ".temp\\";
                 ZipFilePath = s;
-                AddToHistory(ZipFilePath);
+                //AddToHistory(ZipFilePath);
 
                 Thread thread = new Thread(() => RunThread());
                 thread.SetApartmentState(ApartmentState.STA);
@@ -2545,34 +2546,34 @@ namespace MobileDebug_WPF
         {
             rtbLogLines.SelectionChanged += RtbLogLines_SelectionChanged;
 
-            MenuItem men = new MenuItem()
-            {
-                Header = "Open Zip File"
-            };
-            men.Click += MenuOpenZipFile_Click;
-            MenuFile.Items.Add(men);
+            //MenuItem men = new MenuItem()
+            //{
+            //    Header = "Open Zip File"
+            //};
+            //men.Click += MenuOpenZipFile_Click;
+            //MenuFile.Items.Add(men);
 
-            MenuItem menF = new MenuItem()
-            {
-                Header = "Open Folder"
-            };
-            menF.Click += MenuOpenFolder_Click;
-            MenuFile.Items.Add(menF);
+            //MenuItem menF = new MenuItem()
+            //{
+            //    Header = "Open Folder"
+            //};
+            //menF.Click += MenuOpenFolder_Click;
+            //MenuFile.Items.Add(menF);
 
-            MenuItem menR = new MenuItem()
-            {
-                Header = "Open From LD/EM"
-            };
-            menR.Click += MenuOpenFromRobot_Click;
-            MenuFile.Items.Add(menR);
+            //MenuItem menR = new MenuItem()
+            //{
+            //    Header = "Open From LD/EM"
+            //};
+            //menR.Click += MenuOpenFromRobot_Click;
+            //MenuFile.Items.Add(menR);
 
-            Separator sep = new Separator()
-            {
-                Height = 3,
-                Width = double.NaN,
-                BorderThickness = new Thickness(1)
-            };
-            MenuFile.Items.Add(sep);
+            //Separator sep = new Separator()
+            //{
+            //    Height = 3,
+            //    Width = double.NaN,
+            //    BorderThickness = new Thickness(1)
+            //};
+            //MenuFile.Items.Add(sep);
 
             //UpdateHistoryMenuItems(App.Settings.GetValue("FileHistory", new List<FileHistory>()));
         }
@@ -2593,186 +2594,186 @@ namespace MobileDebug_WPF
 
         private void Mf_FileOpened(string filePath)
         {
-            string msg = $"Parsing file: {filePath}";
-            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) =>
-            {
-                //lblStatus.Content = s; 
-                LstStatusList.Items.Insert(0, s);
-            }), msg);
-            Thread.Sleep(1);
-        }
-
-
-
-        private void MenuOpenZipFile_Click(object sender, RoutedEventArgs e)
-        {
-            Microsoft.Win32.OpenFileDialog file = new Microsoft.Win32.OpenFileDialog
-            {
-                CheckFileExists = true,
-                CheckPathExists = true,
-                Filter = "Zip file (*.zip)|*.zip",
-                FilterIndex = 1
-            };
-
-            if ((bool)file.ShowDialog())
-            {
-                WorkingPath = file.FileName + ".temp\\";
-                ZipFilePath = file.FileName;
-                AddToHistory(ZipFilePath);
-
-                Thread thread = new Thread(() => RunThread());
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
-            }
-        }
-        private void MenuOpenFolder_Click(object sender, EventArgs e)
-        {
-            //var fol = new System.Windows.Forms.FolderBrowserDialog
+            //string msg = $"Parsing file: {filePath}";
+            //Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action<string>((s) =>
             //{
-            //    ShowNewFolderButton = false
-            //};
-
-            //if (fol.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            //{
-            //    WorkingPath = fol.SelectedPath + "\\";
-            //    ZipFilePath = null;
-            //    AddToHistory(WorkingPath);
-
-            //    Thread thread = new Thread(() => RunThread());
-            //    thread.SetApartmentState(ApartmentState.STA);
-            //    thread.Start();
-            //}
-        }
-        private void MenuOpenFromRobot_Click(object sender, RoutedEventArgs e)
-        {
-            MobileDebugDownload mdd = new MobileDebugDownload
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            mdd.FileDownloaded += Mdd_FileDownloaded;
-            mdd.Show();
-        }
-        private void MenuSettings_Search_Click(object sender, RoutedEventArgs e)
-        {
-            LogDetailsEditor win = new LogDetailsEditor
-            {
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this
-            };
-            win.Show();
-        }
-        private void MenuSettings_Application_Click(object sender, RoutedEventArgs e)
-        {
-            ApplicationSettingsEditor appEd = new ApplicationSettingsEditor
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            appEd.Show();
+            //    //lblStatus.Content = s; 
+            //    LstStatusList.Items.Insert(0, s);
+            //}), msg);
+            //Thread.Sleep(1);
         }
 
-        private class FileHistory
-        {
-            public string Path { get; set; }
-            public bool IsDirectory { get; set; } = false;
-        }
-        private void AddToHistory(string filePath)
-        {
-            List<FileHistory> history = App.Settings.GetValue("FileHistory", new List<FileHistory>());
 
-            FileHistory fhFile;
-            if (!File.Exists(filePath) && !Directory.Exists(filePath))
-            {
-                IEnumerable<FileHistory> his = history.Where(s => s.Path.Equals(filePath));
 
-                foreach (FileHistory fh in history.ToList())
-                    history.Remove(fh);
-            }
-            else
-            {
-                fhFile = new FileHistory()
-                {
-                    Path = filePath,
-                };
-                if (File.Exists(filePath))
-                    fhFile.IsDirectory = false;
-                else
-                    fhFile.IsDirectory = true;
+        //private void MenuOpenZipFile_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Microsoft.Win32.OpenFileDialog file = new Microsoft.Win32.OpenFileDialog
+        //    {
+        //        CheckFileExists = true,
+        //        CheckPathExists = true,
+        //        Filter = "Zip file (*.zip)|*.zip",
+        //        FilterIndex = 1
+        //    };
 
-                if (!history.Contains(fhFile))
-                    history.Add(fhFile);
-            }
+        //    if ((bool)file.ShowDialog())
+        //    {
+        //        WorkingPath = file.FileName + ".temp\\";
+        //        ZipFilePath = file.FileName;
+        //        AddToHistory(ZipFilePath);
 
-            App.Settings.SetValue("FileHistory", history);
+        //        Thread thread = new Thread(() => RunThread());
+        //        thread.SetApartmentState(ApartmentState.STA);
+        //        thread.Start();
+        //    }
+        //}
+        //private void MenuOpenFolder_Click(object sender, EventArgs e)
+        //{
+        //    //var fol = new System.Windows.Forms.FolderBrowserDialog
+        //    //{
+        //    //    ShowNewFolderButton = false
+        //    //};
 
-            UpdateHistoryMenuItems(history);
-        }
-        private void UpdateHistoryMenuItems(List<FileHistory> history)
-        {
-            int i = MenuFile.Items.Count - 1;
+        //    //if (fol.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        //    //{
+        //    //    WorkingPath = fol.SelectedPath + "\\";
+        //    //    ZipFilePath = null;
+        //    //    AddToHistory(WorkingPath);
 
-            for (; i > 0; i--)
-            {
-                if (MenuFile.Items[i] is MenuItem mi)
-                {
-                    mi.Click -= HistoryMenuItem_Click;
-                    MenuFile.Items.Remove(mi);
-                }
-                else if (MenuFile.Items[i] is Separator)
-                    break;
-            }
+        //    //    Thread thread = new Thread(() => RunThread());
+        //    //    thread.SetApartmentState(ApartmentState.STA);
+        //    //    thread.Start();
+        //    //}
+        //}
+        //private void MenuOpenFromRobot_Click(object sender, RoutedEventArgs e)
+        //{
+        //    MobileDebugDownload mdd = new MobileDebugDownload
+        //    {
+        //        Owner = this,
+        //        WindowStartupLocation = WindowStartupLocation.CenterOwner
+        //    };
+        //    mdd.FileDownloaded += Mdd_FileDownloaded;
+        //    mdd.Show();
+        //}
+        //private void MenuSettings_Search_Click(object sender, RoutedEventArgs e)
+        //{
+        //    LogDetailsEditor win = new LogDetailsEditor
+        //    {
+        //        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        //        Owner = this
+        //    };
+        //    win.Show();
+        //}
+        //private void MenuSettings_Application_Click(object sender, RoutedEventArgs e)
+        //{
+        //    ApplicationSettingsEditor appEd = new ApplicationSettingsEditor
+        //    {
+        //        Owner = this,
+        //        WindowStartupLocation = WindowStartupLocation.CenterOwner
+        //    };
+        //    appEd.Show();
+        //}
 
-            foreach (FileHistory filePath in history)
-            {
-                MenuItem tsm = new MenuItem
-                {
-                    Header = filePath.IsDirectory ? System.IO.Path.GetDirectoryName(filePath.Path) : System.IO.Path.GetFileName(filePath.Path),
-                    Tag = filePath
-                };
-                tsm.Click += HistoryMenuItem_Click;
-                MenuFile.Items.Add(tsm);
-            }
-        }
-        private void HistoryMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is MenuItem mi)
-            {
-                if (mi.Tag is FileHistory filePath)
-                {
-                    if (!filePath.IsDirectory)
-                    {
-                        if (!File.Exists(filePath.Path))
-                        {
-                            AddToHistory(filePath.Path);
-                            return;
-                        }
+        //private class FileHistory
+        //{
+        //    public string Path { get; set; }
+        //    public bool IsDirectory { get; set; } = false;
+        //}
+        //private void AddToHistory(string filePath)
+        //{
+        //    List<FileHistory> history = App.Settings.GetValue("FileHistory", new List<FileHistory>());
 
-                        WorkingPath = filePath.Path + ".temp\\";
-                        ZipFilePath = filePath.Path;
+        //    FileHistory fhFile;
+        //    if (!File.Exists(filePath) && !Directory.Exists(filePath))
+        //    {
+        //        IEnumerable<FileHistory> his = history.Where(s => s.Path.Equals(filePath));
 
-                        Thread thread = new Thread(() => RunThread());
-                        thread.SetApartmentState(ApartmentState.STA);
-                        thread.Start();
-                    }
-                    else
-                    {
-                        if (!Directory.Exists(filePath.Path))
-                        {
-                            AddToHistory(filePath.Path);
-                            return;
-                        }
+        //        foreach (FileHistory fh in history.ToList())
+        //            history.Remove(fh);
+        //    }
+        //    else
+        //    {
+        //        fhFile = new FileHistory()
+        //        {
+        //            Path = filePath,
+        //        };
+        //        if (File.Exists(filePath))
+        //            fhFile.IsDirectory = false;
+        //        else
+        //            fhFile.IsDirectory = true;
 
-                        WorkingPath = filePath.Path;
-                        ZipFilePath = null;
+        //        if (!history.Contains(fhFile))
+        //            history.Add(fhFile);
+        //    }
 
-                        Thread thread = new Thread(() => RunThread());
-                        thread.SetApartmentState(ApartmentState.STA);
-                        thread.Start();
-                    }
-                }
-            }
-        }
+        //    App.Settings.SetValue("FileHistory", history);
+
+        //    UpdateHistoryMenuItems(history);
+        //}
+        //private void UpdateHistoryMenuItems(List<FileHistory> history)
+        //{
+        //    int i = MenuFile.Items.Count - 1;
+
+        //    for (; i > 0; i--)
+        //    {
+        //        if (MenuFile.Items[i] is MenuItem mi)
+        //        {
+        //            mi.Click -= HistoryMenuItem_Click;
+        //            MenuFile.Items.Remove(mi);
+        //        }
+        //        else if (MenuFile.Items[i] is Separator)
+        //            break;
+        //    }
+
+        //    foreach (FileHistory filePath in history)
+        //    {
+        //        MenuItem tsm = new MenuItem
+        //        {
+        //            Header = filePath.IsDirectory ? System.IO.Path.GetDirectoryName(filePath.Path) : System.IO.Path.GetFileName(filePath.Path),
+        //            Tag = filePath
+        //        };
+        //        tsm.Click += HistoryMenuItem_Click;
+        //        MenuFile.Items.Add(tsm);
+        //    }
+        //}
+        //private void HistoryMenuItem_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (sender is MenuItem mi)
+        //    {
+        //        if (mi.Tag is FileHistory filePath)
+        //        {
+        //            if (!filePath.IsDirectory)
+        //            {
+        //                if (!File.Exists(filePath.Path))
+        //                {
+        //                    AddToHistory(filePath.Path);
+        //                    return;
+        //                }
+
+        //                WorkingPath = filePath.Path + ".temp\\";
+        //                ZipFilePath = filePath.Path;
+
+        //                Thread thread = new Thread(() => RunThread());
+        //                thread.SetApartmentState(ApartmentState.STA);
+        //                thread.Start();
+        //            }
+        //            else
+        //            {
+        //                if (!Directory.Exists(filePath.Path))
+        //                {
+        //                    AddToHistory(filePath.Path);
+        //                    return;
+        //                }
+
+        //                WorkingPath = filePath.Path;
+        //                ZipFilePath = null;
+
+        //                Thread thread = new Thread(() => RunThread());
+        //                thread.SetApartmentState(ApartmentState.STA);
+        //                thread.Start();
+        //            }
+        //        }
+        //    }
+        //}
 
         private void ExpTOC_Collapsed(object sender, RoutedEventArgs e) => App.Settings.SetValue("ExpanderTOC", ((Expander)sender).IsExpanded);
         private void ExpTOC_Expanded(object sender, RoutedEventArgs e) => App.Settings.SetValue("ExpanderTOC", ((Expander)sender).IsExpanded);

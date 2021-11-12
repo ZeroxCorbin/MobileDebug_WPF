@@ -1,14 +1,14 @@
-﻿<UserControl x:Class="MobileDebug_WPF.WindowViews.SystemInformationView"
+﻿<UserControl x:Class="MobileDebug_WPF.WindowViews.TableOfContentsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-                                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-        xmlns:IconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:IconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:WindowViewModel="clr-namespace:MobileDebug_WPF.WindowViewModel"
              xmlns:Models="clr-namespace:MobileDebug_WPF.Models"
              xmlns:local="clr-namespace:MobileDebug_WPF.WindowViews"
-             d:DataContext="{d:DesignInstance Type=WindowViewModel:SystemInformationViewModel}"
+             d:DataContext="{d:DesignInstance Type=WindowViewModel:TableOfContentsViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -17,7 +17,7 @@
     <Expander IsExpanded="{Binding IsExpanded}"
               ExpandDirection="Right" MaxWidth="400">
         <Expander.Header>
-            <Label Content="SYSTEM INFORMATION" Margin="0,0,0,0">
+            <Label Content="TABLE OF CONTENTS" Margin="0,0,0,0">
                 <Label.LayoutTransform>
                     <TransformGroup>
                         <ScaleTransform ScaleX="1" ScaleY="1" />
@@ -38,32 +38,25 @@
         </Expander.Header>
 
         <Grid >
-            <TreeView ItemsSource="{Binding SystemEntries}">
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}">
-                        <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
-                    </Style>
-                </TreeView.ItemContainerStyle>
+            <TreeView ItemsSource="{Binding Contents}">
                 <TreeView.ItemTemplate>
-                
-                <HierarchicalDataTemplate ItemsSource = "{Binding SystemInformationEntries}"
-                                          DataType = "{x:Type Models:SystemInformationHeader}" >
 
-                        <Label Content="{Binding Name}"/>
+                    <HierarchicalDataTemplate ItemsSource = "{Binding}"
+                                          DataType = "{x:Type Models:TOCEntry}" >
 
-                        <HierarchicalDataTemplate.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource = "{Binding SystemInformationEntries}"
-                                                      DataType = "{x:Type Models:SystemInformationHeader}">
-                                
-                                <TextBox Text="{Binding Name}" TextWrapping="Wrap" BorderThickness="0" IsReadOnly="True"/>
-                                
-                            </HierarchicalDataTemplate>
-                        </HierarchicalDataTemplate.ItemTemplate>
+                        <TextBlock>
+                            <Hyperlink Command="{Binding ClickCommand}" CommandParameter="{Binding}">
+                                <Run Text="{Binding Name}"/>
+                            </Hyperlink>                            
+                        </TextBlock>
+
+                        
+
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
-            </TreeView>            
+            </TreeView>
         </Grid>
 
-        
+
     </Expander>
 </UserControl>

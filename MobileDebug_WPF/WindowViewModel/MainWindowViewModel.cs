@@ -37,6 +37,7 @@ namespace MobileDebug_WPF.WindowViewModel
         }
 
         public SystemInformationViewModel SystemInformation { get; }
+        public TableOfContentsViewModel TableOfContents { get; }
 
         public class LogDetails_class
         {
@@ -149,7 +150,7 @@ namespace MobileDebug_WPF.WindowViewModel
                 {
                    // AddToHistory(file.FileName);
                     SystemInformation.Load();
-
+                    TableOfContents.Load();
                 }
                 //Thread thread = new Thread(() => RunThread());
                 //thread.SetApartmentState(ApartmentState.STA);
@@ -220,6 +221,7 @@ namespace MobileDebug_WPF.WindowViewModel
             _DialogCoordinator = controller;
 
             SystemInformation = new SystemInformationViewModel();
+            TableOfContents = new TableOfContentsViewModel();
 
             OpenCommand = new RelayCommand(OpenCallback, c => true);
             OpenNewDebugFileCommand = new RelayCommand(OpenNewDebugFileCallback, c => true);

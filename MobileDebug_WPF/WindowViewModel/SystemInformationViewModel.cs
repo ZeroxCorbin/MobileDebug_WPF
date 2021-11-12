@@ -21,14 +21,6 @@ namespace MobileDebug_WPF.WindowViewModel
             }
         }
 
-        public bool ExpanderEnabled
-        {
-            get { return _ExpanderEnabled; }
-            set { _ = Set(ref _ExpanderEnabled, value); }
-        }
-        private bool _ExpanderEnabled = true;
-
-
         public ObservableCollection<SystemInformationHeader> SystemEntries { get; set; } = new ObservableCollection<SystemInformationHeader>();
         public bool IsEM { get; private set; }
 
