@@ -62,7 +62,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition MaxHeight="300" Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -70,74 +70,87 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+        <!--<ScrollViewer Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
             <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" x:Name="flpLogs" Margin="3" CanVerticallyScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-        </ScrollViewer>
-        <TextBox x:Name="TxtLogLinesPrev" Grid.Column="1" Grid.Row="0" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
+        </ScrollViewer>-->
+
+        <!--<TextBox x:Name="TxtLogLinesPrev" Text="{Binding }" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>-->
         <!--<RichTextBox Grid.Column="1" Grid.Row="1" x:Name="rtbLogLines" Margin="3" AutoWordSelection="False" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>-->
+        <Grid Grid.Column="1" Grid.Row="0" IsSharedSizeScope="True">
+            <ListBox ItemsSource="{Binding BufferData}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid IsSharedSizeScope="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition SharedSizeGroup="LineNumber" Width="Auto"/>
+                                <ColumnDefinition SharedSizeGroup="Line" Width="Auto"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0" Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding LineNumber}" Grid.Column="0"
+                                        FontWeight="Bold" Margin="5,0,5,0"/>
 
-            <Grid>
-                <TreeView ItemsSource="{Binding LogViewerDetails}" Padding="10">
-                    <TreeView.ItemTemplate>
+                            <TextBlock Text="{Binding Line}" Grid.Column="2"
+                                        TextWrapping="Wrap"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
 
-                        <HierarchicalDataTemplate ItemsSource = "{Binding SearchResults}"
-                                                      DataType = "{x:Type Models:LogViewerEntry}">
+        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+            <TreeView ItemsSource="{Binding LogViewerDetails}" Padding="10">
+                <TreeView.ItemTemplate>
 
-                            <TextBlock>
+                    <HierarchicalDataTemplate ItemsSource = "{Binding SearchResults}"
+                                              DataType = "{x:Type Models:LogViewerEntry}">
+
+                        <TextBlock>
                             <Hyperlink Command="{Binding OpenCommand}" CommandParameter="{Binding}">
                                 <Run Text="{Binding LogFileName}"/>
                             </Hyperlink>
-                            </TextBlock>
+                        </TextBlock>
 
-                            <HierarchicalDataTemplate.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid>
-                                        <!--<StackPanel Orientation="Horizontal">-->
+                        <HierarchicalDataTemplate.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
 
-                                        <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TreeViewItem}, AncestorLevel=2}, Path=DataContext.ViewCommand}" 
+                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TreeViewItem}, AncestorLevel=2}, Path=DataContext.ViewCommand}" 
                                                 CommandParameter="{Binding}" BorderThickness="0" Margin="1" Padding="1">
-                                            <StackPanel Orientation="Horizontal">
-                                                <Label Content="{Binding Key}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
-                                                <Label Content="{Binding Value.Count}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
-                                            </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Label Content="{Binding Key}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
+                                            <Label Content="{Binding Value.Count}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
+                                        </StackPanel>
 
-                                        </Button>
+                                    </Button>
 
+                                </Grid>
 
-                                        <!--</StackPanel>-->
-                                    </Grid>
+                            </DataTemplate>
+                        </HierarchicalDataTemplate.ItemTemplate>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Grid>
 
-                                </DataTemplate>
-                            </HierarchicalDataTemplate.ItemTemplate>
-                        </HierarchicalDataTemplate>
-                    </TreeView.ItemTemplate>
-                </TreeView>
-            </Grid>
+        <DockPanel  Grid.Column="1" Grid.Row="1">
+            <ListView ItemsSource="{Binding LogData}" SelectedItem="{Binding SelectedLogData}" Style="{StaticResource LogViewerStyle}" >
+                <ListView.Template>
+                    <ControlTemplate>
+                        <ScrollViewer CanContentScroll="True">
+                            <ItemsPresenter/>
+                        </ScrollViewer>
+                    </ControlTemplate>
+                </ListView.Template>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel IsItemsHost="True"/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+            </ListView>
+        </DockPanel>
 
-            <DockPanel Grid.Column="1">
-                <ListView ItemsSource="{Binding LogData}" Style="{StaticResource LogViewerStyle}">
-                    <ListView.Template>
-                        <ControlTemplate>
-                            <ScrollViewer CanContentScroll="True">
-                                <ItemsPresenter/>
-                            </ScrollViewer>
-                        </ControlTemplate>
-                    </ListView.Template>
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel IsItemsHost="True"/>
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
-                </ListView>
-            </DockPanel>
-
-            <!--<Grid Grid.Column="1">
+        <!--<Grid Grid.Column="1">
             <TreeView ItemsSource="{Binding LogData}">
                 <TreeView.ItemTemplate>
                     <DataTemplate>
@@ -149,6 +162,5 @@
                 </TreeView.ItemTemplate>
             </TreeView>
         </Grid>-->
-        </Grid>
     </Grid>
 </mah:MetroTabItem>

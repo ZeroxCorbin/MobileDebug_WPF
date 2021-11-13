@@ -23,10 +23,36 @@ namespace MobileDebug_WPF.WindowViewModel
 
         public bool IsEM { get; private set; }
 
-        private object LogViewerDetailsLock=new object();
+        private object LogViewerDetailsLock = new object();
         public ObservableCollection<LogViewerEntry> LogViewerDetails { get; private set; } = new ObservableCollection<LogViewerEntry>();
-        public List<FileSearchResults> LogData { get => _LogData; private set=>Set(ref _LogData, value); }
+        public List<FileSearchResults> LogData { get => _LogData; private set => Set(ref _LogData, value); }
         private List<FileSearchResults> _LogData;
+
+        public FileSearchResults SelectedLogData
+        {
+            get => _SelectedLogData;
+            set
+            {
+                Set(ref _SelectedLogData, value);
+
+                if (value == null)
+                {
+                    BufferData.Clear();
+                    OnPropertyChanged("BufferData");
+                    return;
+                }
+                else
+                {
+                    BufferData.Clear();
+                    foreach (FileSearchResults s in value.Buffer.Raw)
+                        BufferData.Add(s);
+                    OnPropertyChanged("BufferData");
+                }
+            }
+        }
+        private FileSearchResults _SelectedLogData;
+
+        public ObservableCollection<FileSearchResults> BufferData { get; } = new ObservableCollection<FileSearchResults>();
 
         public LogViewerViewModel()
         {
@@ -150,6 +176,7 @@ namespace MobileDebug_WPF.WindowViewModel
                 }
             }
         }
+
         private void OpenCallback(object parameter)
         {
             var p = new System.Diagnostics.Process();
