@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace MobileDebug_WPF.WindowViewModel
@@ -22,13 +23,28 @@ namespace MobileDebug_WPF.WindowViewModel
             }
         }
 
-        public ObservableCollection<TOCEntry> Contents { get; } = new ObservableCollection<TOCEntry>();
+        public bool IsLoading
+        {
+            get { return _IsLoading; }
+            set { Set(ref _IsLoading, value); }
+        }
+        private bool _IsLoading;
 
+        private object ContentsLock = new object();
+        public ObservableCollection<TableOfContentsEntry> Contents { get; } = new ObservableCollection<TableOfContentsEntry>();
+public TableOfContentsViewModel()
+        {
+            BindingOperations.EnableCollectionSynchronization(Contents, ContentsLock);
+        }
         public void Load()
         {
+            IsLoading = true;
+
             Contents.Clear();
 
             ReadTOC();
+
+            IsLoading = false;
         }
 
         private void ReadTOC()
@@ -54,7 +70,7 @@ namespace MobileDebug_WPF.WindowViewModel
                 row[1] = line.Substring(i - 18, 10);
                 row[2] = line.Substring(i - 7, 5);
 
-                TOCEntry toc = new TOCEntry()
+                TableOfContentsEntry toc = new TableOfContentsEntry()
                 {
                     ClickCommand = new RelayCommand(ClickCallback, c => true),
                     Name = row[0],
@@ -68,7 +84,7 @@ namespace MobileDebug_WPF.WindowViewModel
         private void ClickCallback(object parameter)
         {
             var p = new System.Diagnostics.Process();
-            p.StartInfo = new System.Diagnostics.ProcessStartInfo(((TOCEntry)parameter).Path)
+            p.StartInfo = new System.Diagnostics.ProcessStartInfo(((TableOfContentsEntry)parameter).Path)
             {
                 UseShellExecute = true
             };

@@ -20,7 +20,7 @@
         Closing="Window_Closing">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -29,9 +29,10 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+        
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" >
             <mah:DropDownButton
-                                Content="File"
+                                Content="Open"
                                 ItemsSource="{Binding OpenCommands}">
                 <mah:DropDownButton.ItemContainerStyle>
                     <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
@@ -41,58 +42,15 @@
                 </mah:DropDownButton.ItemContainerStyle>
             </mah:DropDownButton>
         </StackPanel>
-         <!--<ToolBar Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3">
-            <Menu>
-                <MenuItem x:Name="MenuFile" Header="File"/>
-                <MenuItem x:Name="MenuSettings" Header="Settings">
-                    <MenuItem x:Name="MenuSettings_Search" Header="Search Settings"/>
-                    <MenuItem x:Name="MenuSettings_Application" Header="Application Settings" Click="MenuSettings_Application_Click"/>
-                </MenuItem>
-                <MenuItem x:Name="MenuMap" Header="Map" Visibility="Collapsed" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}"/>
-            </Menu>
-
-            <Label Content="Status: " Margin="20,0,0,0" VerticalContentAlignment="Center"/>
-            <ListBox x:Name="LstStatusList" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" ScrollViewer.VerticalScrollBarVisibility="Visible" Margin="0,1" BorderBrush="{x:Null}"/>
-        </ToolBar>-->
-
+        
         <WindowViews:SystemInformationView x:Name="SystemInformationExpander" Grid.Row="1" Grid.Column="0"/>
+        
         <WindowViews:TableOfContentsView x:Name="TableOfContentsExpander" Grid.Row="1" Grid.Column="1"/>
-        
-        <!--<Expander x:Name="ExpTOC" Grid.Row="1" Grid.Column="1" ExpandDirection="Right" BorderBrush="Black" BorderThickness="1" Margin="3" Collapsed="ExpTOC_Collapsed" Expanded="ExpTOC_Expanded">
-            <Expander.Header>
-                <TextBlock Text="Table of Contents" RenderTransformOrigin="0.5,0.5" Margin="0,0,0,0" Width="Auto">
-                    <TextBlock.LayoutTransform>
-                        <TransformGroup>
-                            <RotateTransform Angle="90"/>
-                         </TransformGroup>
-                    </TextBlock.LayoutTransform>
-                </TextBlock>
-            </Expander.Header>
-            <ScrollViewer>
-                <StackPanel x:Name="stkTOC" Margin="10"/>
-            </ScrollViewer>
-        </Expander>-->
-        
-        <mah:MetroTabControl Grid.Row="1" Grid.Column="3" x:Name="tbcMain" Margin="3" >
-            <mah:MetroTabItem x:Name="tabLogs" Header="Logs">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition MaxHeight="300" Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
 
-                    <ScrollViewer Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
-                        <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" x:Name="flpLogs" Margin="3" CanVerticallyScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                    </ScrollViewer>
-                    <TextBox x:Name="TxtLogLinesPrev" Grid.Column="1" Grid.Row="0" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
-                    <RichTextBox Grid.Column="1" Grid.Row="1" x:Name="rtbLogLines" Margin="3" AutoWordSelection="False" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
-
-                </Grid>
-            </mah:MetroTabItem>
+        <mah:MetroTabControl Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" x:Name="tbcMain" Margin="3" >
+            
+            <WindowViews:LogViewerView x:Name="LogViewer" />
+            
             <mah:MetroTabItem x:Name="tabCrashLogs" Header="Crash Logs">
                 <Grid>
                     <Grid.RowDefinitions>

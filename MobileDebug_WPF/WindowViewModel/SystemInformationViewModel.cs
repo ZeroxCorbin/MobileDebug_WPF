@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace MobileDebug_WPF.WindowViewModel
 {
@@ -21,17 +22,33 @@ namespace MobileDebug_WPF.WindowViewModel
             }
         }
 
+        public bool IsLoading
+        {
+            get { return _IsLoading; }
+            set { Set( ref _IsLoading , value); }
+        }
+ private bool _IsLoading;
+
+        private object SystemEntriesLock = new object();
         public ObservableCollection<SystemInformationHeader> SystemEntries { get; set; } = new ObservableCollection<SystemInformationHeader>();
         public bool IsEM { get; private set; }
 
+        public SystemInformationViewModel()
+        {
+            BindingOperations.EnableCollectionSynchronization(SystemEntries, SystemEntriesLock);
+        }
         public void Load()
         {
+            IsLoading = true;
+
             SystemEntries.Clear();
 
             CheckProductType();
             LoadSystemHealth();
             LoadSystemDetails();
             LoadSystemApps();
+
+            IsLoading = false;
         }
         private void CheckProductType()
         {
@@ -223,7 +240,7 @@ namespace MobileDebug_WPF.WindowViewModel
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return null;
+                return "";
             }
 
         }

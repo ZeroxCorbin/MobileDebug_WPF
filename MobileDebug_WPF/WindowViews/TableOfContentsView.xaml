@@ -17,7 +17,8 @@
     <Expander IsExpanded="{Binding IsExpanded}"
               ExpandDirection="Right" MaxWidth="400">
         <Expander.Header>
-            <Label Content="TABLE OF CONTENTS" Margin="0,0,0,0">
+            <StackPanel>
+             <Label Content="TABLE OF CONTENTS" Margin="0,0,0,0">
                 <Label.LayoutTransform>
                     <TransformGroup>
                         <ScaleTransform ScaleX="1" ScaleY="1" />
@@ -35,6 +36,10 @@
                     </TransformGroup>
                 </Label.RenderTransform>
             </Label>
+                <mah:ProgressRing Foreground="{DynamicResource AccentColorBrush}" Width="16" Height="16"
+                      IsActive="{Binding IsLoading}" />
+            </StackPanel>
+
         </Expander.Header>
 
         <Grid >
@@ -42,7 +47,7 @@
                 <TreeView.ItemTemplate>
 
                     <HierarchicalDataTemplate ItemsSource = "{Binding}"
-                                          DataType = "{x:Type Models:TOCEntry}" >
+                                          DataType = "{x:Type Models:TableOfContentsEntry}" >
 
                         <TextBlock>
                             <Hyperlink Command="{Binding ClickCommand}" CommandParameter="{Binding}">

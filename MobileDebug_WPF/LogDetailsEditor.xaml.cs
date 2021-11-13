@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MobileDebug_WPF.Config;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace MobileDebug_WPF
     {
         private string SearchConfigurationPath => System.AppDomain.CurrentDomain.BaseDirectory + "Config\\";
 
-        private static LogDetails_Serializer.LogDetails Serial;
+        private static LogDetails Serial;
         public LogDetailsEditor()
         {
             InitializeComponent();
@@ -37,16 +38,16 @@ namespace MobileDebug_WPF
         {
             public string Data { get; set; }
             public bool IsLog { get; set; } = false;
-            public LogDetails_Serializer.LogDetailsLog Log { get; set; }
+            public LogDetailsLog Log { get; set; }
             public bool IsSearch { get; set; } = false;
-            public LogDetails_Serializer.LogDetailsLogSearch Search { get; set; }
+            public LogDetailsLogSearch Search { get; set; }
         }
 
         private void Load()
         {
             TvMain.Items.Clear();
 
-            foreach (LogDetails_Serializer.LogDetailsLog log in Serial.Log)
+            foreach (LogDetailsLog log in Serial.Log)
             {
                 StackPanel stkLog = new StackPanel()
                 {
@@ -197,7 +198,7 @@ namespace MobileDebug_WPF
                 cmbLogFileType.SelectionChanged += (sender, e) => log.FileType = (string)((ComboBox)sender).SelectedValue;
                 stkLogFileType.Children.Add(cmbLogFileType);
 
-                foreach (LogDetails_Serializer.LogDetailsLogSearch ser in log.Search)
+                foreach (LogDetailsLogSearch ser in log.Search)
                 {
                     StackPanel stkSearch = new StackPanel()
                     {

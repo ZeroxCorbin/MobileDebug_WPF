@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace MobileDebug_WPF.Models
 {
-    public class TOCEntry
+    public class TableOfContentsEntry
     {
         public string Name { get; set; }
         public ICommand ClickCommand { get; set; }

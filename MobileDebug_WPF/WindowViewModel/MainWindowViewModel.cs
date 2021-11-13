@@ -1,5 +1,7 @@
 ﻿
+using FileSearch;
 using MahApps.Metro.Controls.Dialogs;
+using MobileDebug_WPF.Config;
 using MobileDebug_WPF.Core;
 using MobileMap;
 using System;
@@ -12,7 +14,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using static FileSearch.FileSearch;
 
 namespace MobileDebug_WPF.WindowViewModel
 {
@@ -38,13 +39,14 @@ namespace MobileDebug_WPF.WindowViewModel
 
         public SystemInformationViewModel SystemInformation { get; }
         public TableOfContentsViewModel TableOfContents { get; }
+        public LogViewerViewModel LogViewer { get; }
 
         public class LogDetails_class
         {
             public string LogFileFullName { get; set; }
             public IList<IEnumerable<FileSearchResults>> SearchResults { get; set; } = new List<IEnumerable<FileSearchResults>>();
 
-            public LogDetails_Serializer.LogDetailsLog Log { get; set; }
+            public LogDetailsLog Log { get; set; }
         }
 
         //private Brush ButtonFace { get; set; }
@@ -122,7 +124,7 @@ namespace MobileDebug_WPF.WindowViewModel
             switch ((string)parameter)
             {
                 case "Open Zip File":
-                    OpenZipFile();
+                   Task.Run(()=> OpenZipFile());
                     break;
                 case "Open Folder":
                     break;
@@ -145,12 +147,13 @@ namespace MobileDebug_WPF.WindowViewModel
 
             if ((bool)file.ShowDialog())
             {
-                
+
                 if (ExtractFile(file.FileName))
                 {
-                   // AddToHistory(file.FileName);
+                    // AddToHistory(file.FileName);
                     SystemInformation.Load();
                     TableOfContents.Load();
+                    LogViewer.Load(SystemInformation.IsEM);
                 }
                 //Thread thread = new Thread(() => RunThread());
                 //thread.SetApartmentState(ApartmentState.STA);
@@ -161,7 +164,7 @@ namespace MobileDebug_WPF.WindowViewModel
         {
             try
             {
-                if(Directory.Exists(App.WorkingDirectory))
+                if (Directory.Exists(App.WorkingDirectory))
                     Directory.Delete(App.WorkingDirectory, true);
 
                 ZipFile.ExtractToDirectory(fileName, App.WorkingDirectory);
@@ -175,44 +178,44 @@ namespace MobileDebug_WPF.WindowViewModel
             }
         }
 
-        private class FileHistory
-        {
-            public string Path { get; set; }
-            public bool IsDirectory { get; set; } = false;
-        }
-        private void AddToHistory(string filePath)
-        {
-            Dictionary<string, FileHistory> history = GetOpenHistory();
+        //private class FileHistory
+        //{
+        //    public string Path { get; set; }
+        //    public bool IsDirectory { get; set; } = false;
+        //}
+        //private void AddToHistory(string filePath)
+        //{
+        //    Dictionary<string, FileHistory> history = GetOpenHistory();
 
-            FileHistory fhFile;
-            if (!File.Exists(filePath) && !Directory.Exists(filePath))
-            {
-                var his = history.Where(s => s.Value.Path.Equals(filePath));
+        //    FileHistory fhFile;
+        //    if (!File.Exists(filePath) && !Directory.Exists(filePath))
+        //    {
+        //        var his = history.Where(s => s.Value.Path.Equals(filePath));
 
-                foreach (var fh in history.ToList())
-                    history.Remove(fh.Key);
-            }
-            else
-            {
-                fhFile = new FileHistory()
-                {
-                    Path = filePath,
-                };
-                if (File.Exists(filePath))
-                    fhFile.IsDirectory = false;
-                else
-                    fhFile.IsDirectory = true;
+        //        foreach (var fh in history.ToList())
+        //            history.Remove(fh.Key);
+        //    }
+        //    else
+        //    {
+        //        fhFile = new FileHistory()
+        //        {
+        //            Path = filePath,
+        //        };
+        //        if (File.Exists(filePath))
+        //            fhFile.IsDirectory = false;
+        //        else
+        //            fhFile.IsDirectory = true;
 
-                if (!history.ContainsKey(Path.GetFileName(fhFile.Path)))
-                    history.Add(Path.GetFileName(fhFile.Path), fhFile);
-            }
+        //        if (!history.ContainsKey(Path.GetFileName(fhFile.Path)))
+        //            history.Add(Path.GetFileName(fhFile.Path), fhFile);
+        //    }
 
-            App.Settings.SetValue("FileHistory", history);
+        //    App.Settings.SetValue("FileHistory", history);
 
-            //BuildOpenMenu();
-            //UpdateHistoryMenuItems(history);
-        }
-        private Dictionary<string, FileHistory> GetOpenHistory() => App.Settings.GetValue("FileHistory", new Dictionary<string, FileHistory>());
+        //    //BuildOpenMenu();
+        //    //UpdateHistoryMenuItems(history);
+        //}
+        //private Dictionary<string, FileHistory> GetOpenHistory() => App.Settings.GetValue("FileHistory", new Dictionary<string, FileHistory>());
 
         IDialogCoordinator _DialogCoordinator;
 
@@ -222,15 +225,9 @@ namespace MobileDebug_WPF.WindowViewModel
 
             SystemInformation = new SystemInformationViewModel();
             TableOfContents = new TableOfContentsViewModel();
+            LogViewer = new LogViewerViewModel();
 
             OpenCommand = new RelayCommand(OpenCallback, c => true);
-            OpenNewDebugFileCommand = new RelayCommand(OpenNewDebugFileCallback, c => true);
-        }
-
-        public ICommand OpenNewDebugFileCommand { get; }
-        private void OpenNewDebugFileCallback(object parameter)
-        {
-
         }
 
     }

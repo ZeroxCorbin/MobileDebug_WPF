@@ -26,10 +26,11 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml;
 using System.Windows.Threading;
-using static FileSearch.FileSearch;
 using OxyPlot.Legends;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls;
+using FileSearch;
+using MobileDebug_WPF.Config;
 
 namespace MobileDebug_WPF
 {
@@ -43,7 +44,7 @@ namespace MobileDebug_WPF
             public string LogFileFullName { get; set; }
             public IList<IEnumerable<FileSearchResults>> SearchResults { get; set; } = new List<IEnumerable<FileSearchResults>>();
 
-            public LogDetails_Serializer.LogDetailsLog Log { get; set; }
+            public LogDetailsLog Log { get; set; }
         }
 
         private Brush ButtonFace { get; set; }
@@ -126,6 +127,7 @@ namespace MobileDebug_WPF
             DataContext = new WindowViewModel.MainWindowViewModel(MahApps.Metro.Controls.Dialogs.DialogCoordinator.Instance);
             SystemInformationExpander.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).SystemInformation;
             TableOfContentsExpander.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).TableOfContents;
+            LogViewer.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).LogViewer;
 
             _ = SetBinding(WidthProperty, new Binding("Width") { Source = DataContext, Mode = BindingMode.TwoWay });
             _ = SetBinding(HeightProperty, new Binding("Height") { Source = DataContext, Mode = BindingMode.TwoWay });
@@ -441,9 +443,9 @@ namespace MobileDebug_WPF
 
             //stkTOC.Children.Clear();
 
-            flpLogs.Children.Clear();
-            rtbLogLines.Document.Blocks.Clear();
-            TxtLogLinesPrev.Text = string.Empty;
+           // flpLogs.Children.Clear();
+            //rtbLogLines.Document.Blocks.Clear();
+            //TxtLogLinesPrev.Text = string.Empty;
             LogDetails = new List<LogDetails_class>();
             LogIndices = new LogIndices();
 
@@ -812,10 +814,10 @@ namespace MobileDebug_WPF
 
         private void SetupLogs()
         {
-            LogDetails_Serializer.LogDetails serial = LogDetails_Serializer.Load($"{App.UserDataDirectory}LogDetails.xml");
+            LogDetails serial = LogDetails_Serializer.Load($"{App.UserDataDirectory}LogDetails.xml");
 
             int i = -1;
-            foreach (LogDetails_Serializer.LogDetailsLog log in serial.Log)
+            foreach (LogDetailsLog log in serial.Log)
             {
                 if (IsEM && !log.isEM) continue;
                 if (!IsEM && !log.isLD) continue;
@@ -841,7 +843,7 @@ namespace MobileDebug_WPF
 
                     IEnumerable<FileSearchResults> searchRes = Enumerable.Empty<FileSearchResults>();
 
-                    foreach (LogDetails_Serializer.LogDetailsLogSearch ser in log.Search)
+                    foreach (LogDetailsLogSearch ser in log.Search)
                     {
                         ii++;
 
@@ -880,7 +882,7 @@ namespace MobileDebug_WPF
                                 Tag = ind,
                                 Content = hl
                             };
-                            flpLogs.Children.Add(lb);
+                            //flpLogs.Children.Add(lb);
 
                             first = false;
                         }
@@ -893,16 +895,16 @@ namespace MobileDebug_WPF
                         };
                         but.Click += LogButton_Click;
 
-                        flpLogs.Children.Add(but);
+                        //flpLogs.Children.Add(but);
                     }
                 }
             }
         }
         private void LogButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (Control c in flpLogs.Children)
-                if (typeof(Button) == c.GetType())
-                    c.Background = ButtonFace;
+            //foreach (Control c in flpLogs.Children)
+            //    if (typeof(Button) == c.GetType())
+            //        c.Background = ButtonFace;
 
             Button btn = (Button)sender;
             LogIndices = (LogIndices)btn.Tag;
@@ -936,11 +938,11 @@ namespace MobileDebug_WPF
                 rtf += ln + "\\par" + Environment.NewLine;
             rtf += rtfTail;
 
-            LoadRTF(rtf, rtbLogLines);
+            //LoadRTF(rtf, rtbLogLines);
         }
         private void LoadRTF(string rtf, RichTextBox richTextBox)
         {
-            TxtLogLinesPrev.Text = string.Empty;
+            //TxtLogLinesPrev.Text = string.Empty;
 
             if (string.IsNullOrEmpty(rtf))
                 throw new ArgumentNullException();
@@ -963,37 +965,37 @@ namespace MobileDebug_WPF
         }
         private void RtbLogLines_SelectionChanged(object sender, RoutedEventArgs e)
         {
-            TextPointer txtP = rtbLogLines.CaretPosition.GetLineStartPosition(0).GetInsertionPosition(LogicalDirection.Forward);
+            //TextPointer txtP = rtbLogLines.CaretPosition.GetLineStartPosition(0).GetInsertionPosition(LogicalDirection.Forward);
             int logLineNumber = -1;
             bool found = false;
             while (!found)
             {
                 char[] text = new char[10];
 
-                if (txtP.GetTextInRun(LogicalDirection.Forward, text, 0, 10) > 0)
-                {
-                    foreach (char c in text)
-                        if (c.Equals('\t'))
-                        {
-                            found = true;
-                            break;
-                        }
-                    if (found)
-                    {
-                        string output = new string(text.TakeWhile(char.IsDigit).ToArray());
-                        int.TryParse(output, out logLineNumber);
-                        break;
-                    }
+                //if (txtP.GetTextInRun(LogicalDirection.Forward, text, 0, 10) > 0)
+                //{
+                //    foreach (char c in text)
+                //        if (c.Equals('\t'))
+                //        {
+                //            found = true;
+                //            break;
+                //        }
+                //    if (found)
+                //    {
+                //        string output = new string(text.TakeWhile(char.IsDigit).ToArray());
+                //        int.TryParse(output, out logLineNumber);
+                //        break;
+                //    }
 
-                }
-                else
-                    return;
+                //}
+                //else
+                //    return;
 
-                TextPointer txtP1 = txtP.GetLineStartPosition(-1, out int skipped).GetInsertionPosition(LogicalDirection.Forward);
-                if (skipped == -1)
-                    txtP = txtP1;
-                else
-                    return;
+                //TextPointer txtP1 = txtP.GetLineStartPosition(-1, out int skipped).GetInsertionPosition(LogicalDirection.Forward);
+                //if (skipped == -1)
+                //    txtP = txtP1;
+                //else
+                //    return;
             }
 
             //int currentLineNumber;
@@ -1010,9 +1012,9 @@ namespace MobileDebug_WPF
                 }
             if (!found1) return;
 
-            TxtLogLinesPrev.Text = res.Buffer.GetHead();
-            for (int i = 0; i != 4; i++)
-                TxtLogLinesPrev.Text += res.Buffer.GetNext();
+            //TxtLogLinesPrev.Text = res.Buffer.GetHead();
+            //for (int i = 0; i != 4; i++)
+            //    TxtLogLinesPrev.Text += res.Buffer.GetNext();
         }
         private void LogHyperLink_Click(object sender, RoutedEventArgs e)
         {
@@ -2544,7 +2546,7 @@ namespace MobileDebug_WPF
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            rtbLogLines.SelectionChanged += RtbLogLines_SelectionChanged;
+            //rtbLogLines.SelectionChanged += RtbLogLines_SelectionChanged;
 
             //MenuItem men = new MenuItem()
             //{
