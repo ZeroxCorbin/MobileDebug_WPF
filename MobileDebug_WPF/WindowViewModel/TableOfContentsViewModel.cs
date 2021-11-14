@@ -32,19 +32,25 @@ namespace MobileDebug_WPF.WindowViewModel
 
         private object ContentsLock = new object();
         public ObservableCollection<TableOfContentsEntry> Contents { get; } = new ObservableCollection<TableOfContentsEntry>();
-public TableOfContentsViewModel()
+
+        public TableOfContentsViewModel()
         {
             BindingOperations.EnableCollectionSynchronization(Contents, ContentsLock);
         }
+
         public void Load()
         {
             IsLoading = true;
 
-            Contents.Clear();
-
             ReadTOC();
 
             IsLoading = false;
+        }
+
+        public void Reset()
+        {
+            IsLoading = false;
+            Contents.Clear();
         }
 
         private void ReadTOC()
@@ -74,7 +80,7 @@ public TableOfContentsViewModel()
                 {
                     ClickCommand = new RelayCommand(ClickCallback, c => true),
                     Name = row[0],
-                    Path = Path.Join(Path.Join(App.WorkingDirectory , row[0])),
+                    Path = Path.Join(Path.Join(App.WorkingDirectory, row[0])),
                 };
 
                 Contents.Add(toc);

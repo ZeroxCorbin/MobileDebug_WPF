@@ -21,12 +21,24 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         private bool _IsLoading;
 
+        public bool IsVisible
+        {
+            get { return _IsVisible; }
+            set { Set(ref _IsVisible, value); }
+        }
+        private bool _IsVisible;
+
         public bool IsEM { get; private set; }
 
         private object LogViewerDetailsLock = new object();
         public ObservableCollection<LogViewerEntry> LogViewerDetails { get; private set; } = new ObservableCollection<LogViewerEntry>();
+
+        private object LogDataLock = new object();
         public List<FileSearchResults> LogData { get => _LogData; private set => Set(ref _LogData, value); }
         private List<FileSearchResults> _LogData;
+
+private object BufferDataLock = new object();
+        public ObservableCollection<FileSearchResults> BufferData { get; } = new ObservableCollection<FileSearchResults>();
 
         public FileSearchResults SelectedLogData
         {
@@ -52,14 +64,15 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         private FileSearchResults _SelectedLogData;
 
-        public ObservableCollection<FileSearchResults> BufferData { get; } = new ObservableCollection<FileSearchResults>();
-
         public LogViewerViewModel()
         {
             BindingOperations.EnableCollectionSynchronization(LogViewerDetails, LogViewerDetailsLock);
+
+            BindingOperations.EnableCollectionSynchronization(BufferData, BufferDataLock);
         }
         public void Load(bool isEM)
         {
+            IsVisible = true;
             IsLoading = true;
 
             IsEM = isEM;
@@ -68,11 +81,22 @@ namespace MobileDebug_WPF.WindowViewModel
 
             IsLoading = false;
         }
+        public void Reset()
+        {
+            IsVisible = false;
+            IsLoading = false;
+
+            SelectedLogData = null;
+
+            LogViewerDetails.Clear();
+
+            if (LogData != null)
+                LogData.Clear();
+            LogData = null;
+        }
 
         private void SetupLogs()
         {
-            LogViewerDetails.Clear();
-
             LogDetails serial = LogDetails_Serializer.Load($"{App.UserDataDirectory}LogDetails.xml");
 
             int i = -1;
@@ -190,6 +214,7 @@ namespace MobileDebug_WPF.WindowViewModel
         private void ViewCallback(object parameter)
         {
             LogData = ((KeyValuePair<string, List<FileSearchResults>>)parameter).Value;
+            BindingOperations.EnableCollectionSynchronization(LogData, LogDataLock);
             //OnPropertyChanged("LogData");
 
             //foreach (FileSearchResults res in ((KeyValuePair<string, List<FileSearchResults>>)parameter).Value)

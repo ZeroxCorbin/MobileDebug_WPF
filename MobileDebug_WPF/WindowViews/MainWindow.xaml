@@ -17,6 +17,10 @@
         Top="{Binding Top, Mode=TwoWay}"
         WindowState="{Binding WindowState, Mode=TwoWay}">
 
+    <mah:MetroWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+    </mah:MetroWindow.Resources>
+    
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands>>
 
@@ -38,7 +42,7 @@
             </Button>
         </mah:WindowCommands>
     </mah:MetroWindow.RightWindowCommands>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -51,7 +55,12 @@
         </Grid.ColumnDefinitions>
         
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" >
-            <mah:DropDownButton
+            <Menu>
+                <MenuItem Header="Open">
+                    <MenuItem Header="File" Command="{Binding OpenCommand}" CommandParameter="Open Zip File"/>
+                </MenuItem>
+            </Menu>
+             <!--<mah:DropDownButton
                                 Content="Open"
                                 ItemsSource="{Binding OpenCommands}">
                 <mah:DropDownButton.ItemContainerStyle>
@@ -60,7 +69,7 @@
                         <Setter Property="CommandParameter" Value="{Binding}" />
                     </Style>
                 </mah:DropDownButton.ItemContainerStyle>
-            </mah:DropDownButton>
+            </mah:DropDownButton>-->
         </StackPanel>
         
         <WindowViews:SystemInformationView x:Name="SystemInformationExpander" Grid.Row="1" Grid.Column="0"/>

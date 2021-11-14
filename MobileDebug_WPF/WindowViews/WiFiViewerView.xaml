@@ -14,8 +14,9 @@
                   xmlns:oxy2="clr-namespace:OxyPlot;assembly=OxyPlot"
              d:DataContext="{d:DesignInstance Type=WindowViewModel:WiFiViewerViewModel}"
              mc:Ignorable="d" 
-             d:DesignHeight="400" d:DesignWidth="400">
-
+             d:DesignHeight="400" d:DesignWidth="400"
+                  Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+   
     <mah:MetroTabItem.HeaderTemplate>
         <ItemContainerTemplate DataType="{x:Type WindowViewModel:WiFiViewerViewModel}">
             <StackPanel Orientation="Horizontal">
@@ -54,7 +55,7 @@
             </ListView>
         </StackPanel>
         
-        <Grid Grid.Row="1" Grid.Column="0">
+        <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="2">
             <TreeView ItemsSource="{Binding WiFiViewerDetails}" Padding="10">
                 <TreeView.ItemTemplate>
 

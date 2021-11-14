@@ -41,8 +41,6 @@ namespace MobileDebug_WPF.WindowViewModel
         {
             IsLoading = true;
 
-            SystemEntries.Clear();
-
             CheckProductType();
             LoadSystemHealth();
             LoadSystemDetails();
@@ -50,6 +48,14 @@ namespace MobileDebug_WPF.WindowViewModel
 
             IsLoading = false;
         }
+
+        public void Reset()
+        {
+            IsLoading = false;
+
+            SystemEntries.Clear();
+        }
+
         private void CheckProductType()
         {
             if (GetLineFromFile(App.WorkingDirectory + "mnt\\status\\platform\\productType").Contains("EM")) IsEM = true;

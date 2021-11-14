@@ -12,8 +12,11 @@
              xmlns:local="clr-namespace:MobileDebug_WPF.WindowViews"
              d:DataContext="{d:DesignInstance Type=WindowViewModel:LogViewerViewModel}"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+    
     <mah:MetroTabItem.Resources>
+
         <Style TargetType="ListView" x:Key="LogViewerStyle">
             <Setter Property="Template">
                 <Setter.Value>

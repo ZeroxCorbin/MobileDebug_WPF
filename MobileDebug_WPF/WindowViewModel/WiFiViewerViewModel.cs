@@ -28,6 +28,13 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         private bool _IsLoading;
 
+        public bool IsVisible
+        {
+            get { return _IsVisible; }
+            set { Set(ref _IsVisible, value); }
+        }
+        private bool _IsVisible;
+
         private object WiFiViewerDetailsLock = new object();
         public ObservableCollection<WiFiViewerEntry> WiFiViewerDetails { get; private set; } = new ObservableCollection<WiFiViewerEntry>();
 
@@ -60,7 +67,7 @@ namespace MobileDebug_WPF.WindowViewModel
             if (theme.BaseColorScheme.Equals("Dark"))
                 color = OxyColor.FromRgb(255, 255, 255);
             else
-color = OxyColor.FromRgb(0, 0, 0);
+                color = OxyColor.FromRgb(0, 0, 0);
             plotModel.TextColor = color;
             AddAxes(plotModel, name);
             return plotModel;
@@ -93,18 +100,25 @@ color = OxyColor.FromRgb(0, 0, 0);
 
         public void Load()
         {
+            IsVisible = true;
             IsLoading = true;
 
             SetupLogs();
 
             IsLoading = false;
         }
-
-        private void SetupLogs()
+        public void Reset()
         {
+            IsLoading = false;
+
             WiFiViewerDetails.Clear();
             WiFiSSIDDetails.Clear();
 
+            _BaudPlotModel.Series.Clear();
+            _DecibelPlotModel.Series.Clear();
+        }
+        private void SetupLogs()
+        {
             IList<FileInfo> lst = new List<FileInfo>();
 
             DirectoryInfo dir = new DirectoryInfo(App.WorkingDirectory + "var\\log\\");

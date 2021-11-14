@@ -39,83 +39,6 @@ namespace MobileDebug_WPF
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
-        public class LogDetails_class
-        {
-            public string LogFileFullName { get; set; }
-            public IList<IEnumerable<FileSearchResults>> SearchResults { get; set; } = new List<IEnumerable<FileSearchResults>>();
-
-            public LogDetailsLog Log { get; set; }
-        }
-
-        private Brush ButtonFace { get; set; }
-
-        //Set by CheckProductType() if the debug data is for an EM.
-        public bool IsEM { get; private set; }
-        public bool HasMap { get; private set; }
-        private MapFile MapFile { get; set; }
-
-        //If a zip file is opened this is the path and name.
-        public string ZipFilePath { get; private set; }
-        //This is either the user selected folder or the extracted folder of the ZIP file.
-        private string WorkingPath { get; set; }
-        private string AppPath => System.AppDomain.CurrentDomain.BaseDirectory;
-
-        //Log details from the LogDetails.xml file.
-        private List<LogDetails_class> LogDetails { get; set; } = new List<LogDetails_class>();
-        //When a button is clicked to view a logs search results these are the Log and Search Indexes.
-        private LogIndices LogIndices { get; set; }
-
-        //Log level enum. Returns a value based on the name. Used to select correct RTF color.
-        public enum Levels
-        {
-            DEBUG,
-            INFO,
-            WARN,
-            ERROR,
-            FATAL
-        }
-
-        public enum Colors
-        {
-            BLACK,
-            GREEN,
-            ORANGE,
-            RED,
-            BLUE,
-            YELLOW
-        }
-
-        //The head of the RTF text. Defines the colors fo highlighting.
-        private readonly string rtfHead = "{\\rtf1\\ansi\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 Segoe UI;}}\r\n" +
-                                "{\\colortbl;" +
-            "\\red0\\green0\\blue0;" + //Black
-            "\\red0\\green153\\blue0;" + //Green
-            "\\red255\\green192\\blue0;" + //Orange
-            "\\red255\\green0\\blue0;" + //Red
-            "\\red18\\green164\\blue239;" + //Light Blue
-            "\\red255\\green250\\blue18;" + //Light Blue
-            "}\r\n{\\*\\generator Riched20 10.0.17134}\\viewkind4\\uc1 \r\n\\pard\\f0\\fs18\\lang1033 ";
-        //The tail of the RTF text.
-        private readonly string rtfTail = "\\par\r\n}\r\n";
-        //RTF Colors to use for highlighting search results based on Level set for the log.
-        private readonly string[] rtfSearchFormatsLevel = { "\\ulwave\\cf2 ", "\\ulwave\\cf2 ", "\\ulwave\\cf3 ", "\\ulwave\\cf4 ", "\\ulwave\\cf4 " };
-        //RTF Colors to use for highlighting search results based on Level set for the log.
-        private readonly string[] rtfSearchFormatsColors = { "\\cf1 ", "\\cf2 ", "\\cf3 ", "\\cf4 ", "\\cf5 ", "\\cf6 " };
-        //RTF highlight tail. Resets to Black text.
-        private readonly string rtfSearchFormatsLevelTail = "\\ul0\\cf1 ";
-        //RTF highlight tail. Resets to Black text.
-        private readonly string rtfSearchFormatsColorsTail = "\\cf1 ";
-
-        private const string MapDatabaseExtension = ".sqlite";
-        private const string MapDatabaseTableName = "Map";
-        private const string MapDatabaseFileKey = "File";
-        private const string MapDatabaseContentsDateKey = "_changedate";
-        private const string MapDatabaseContentsHeaderKey = "_header";
-        private const string MapDatabaseContentsKey = "_contents";
-        private const string MapDatabaseWifiKey = "WiFi";
-        private const string MapDatabasePositionsKey = "Positions";
-
-        private string SearchConfigurationPath => System.AppDomain.CurrentDomain.BaseDirectory + "Config\\";
         public MainWindow()
         {
             //ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
@@ -132,8 +55,6 @@ namespace MobileDebug_WPF
 
             _ = SetBinding(WidthProperty, new Binding("Width") { Source = DataContext, Mode = BindingMode.TwoWay });
             _ = SetBinding(HeightProperty, new Binding("Height") { Source = DataContext, Mode = BindingMode.TwoWay });
-
-            ButtonFace = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFDDDDDD"));
 
             //WindowStartupLocation = WindowStartupLocation.Manual;
 

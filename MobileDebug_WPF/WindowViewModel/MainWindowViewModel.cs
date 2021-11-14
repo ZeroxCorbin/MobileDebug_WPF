@@ -42,83 +42,6 @@ namespace MobileDebug_WPF.WindowViewModel
         public LogViewerViewModel LogViewer { get; }
         public WiFiViewerViewModel WiFiViewer { get; }
 
-        public class LogDetails_class
-        {
-            public string LogFileFullName { get; set; }
-            public IList<IEnumerable<FileSearchResults>> SearchResults { get; set; } = new List<IEnumerable<FileSearchResults>>();
-
-            public LogDetailsLog Log { get; set; }
-        }
-
-        //private Brush ButtonFace { get; set; }
-
-        //Set by CheckProductType() if the debug data is for an EM.
-        public bool IsEM { get; private set; }
-        public bool HasMap { get; private set; }
-        private MapFile MapFile { get; set; }
-
-        //If a zip file is opened this is the path and name.
-        public string ZipFilePath { get; private set; }
-
-        //Log details from the LogDetails.xml file.
-        private List<LogDetails_class> LogDetails { get; set; } = new List<LogDetails_class>();
-        //When a button is clicked to view a logs search results these are the Log and Search Indexes.
-        private LogIndices LogIndices { get; set; }
-
-        //Log level enum. Returns a value based on the name. Used to select correct RTF color.
-        public enum Levels
-        {
-            DEBUG,
-            INFO,
-            WARN,
-            ERROR,
-            FATAL
-        }
-
-        public enum Colors
-        {
-            BLACK,
-            GREEN,
-            ORANGE,
-            RED,
-            BLUE,
-            YELLOW
-        }
-
-        //The head of the RTF text. Defines the colors fo highlighting.
-        private readonly string rtfHead = "{\\rtf1\\ansi\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 Segoe UI;}}\r\n" +
-                                "{\\colortbl;" +
-            "\\red0\\green0\\blue0;" + //Black
-            "\\red0\\green153\\blue0;" + //Green
-            "\\red255\\green192\\blue0;" + //Orange
-            "\\red255\\green0\\blue0;" + //Red
-            "\\red18\\green164\\blue239;" + //Light Blue
-            "\\red255\\green250\\blue18;" + //Light Blue
-            "}\r\n{\\*\\generator Riched20 10.0.17134}\\viewkind4\\uc1 \r\n\\pard\\f0\\fs18\\lang1033 ";
-        //The tail of the RTF text.
-        private readonly string rtfTail = "\\par\r\n}\r\n";
-        //RTF Colors to use for highlighting search results based on Level set for the log.
-        private readonly string[] rtfSearchFormatsLevel = { "\\ulwave\\cf2 ", "\\ulwave\\cf2 ", "\\ulwave\\cf3 ", "\\ulwave\\cf4 ", "\\ulwave\\cf4 " };
-        //RTF Colors to use for highlighting search results based on Level set for the log.
-        private readonly string[] rtfSearchFormatsColors = { "\\cf1 ", "\\cf2 ", "\\cf3 ", "\\cf4 ", "\\cf5 ", "\\cf6 " };
-        //RTF highlight tail. Resets to Black text.
-        private readonly string rtfSearchFormatsLevelTail = "\\ul0\\cf1 ";
-        //RTF highlight tail. Resets to Black text.
-        private readonly string rtfSearchFormatsColorsTail = "\\cf1 ";
-
-        private const string MapDatabaseExtension = ".sqlite";
-        private const string MapDatabaseTableName = "Map";
-        private const string MapDatabaseFileKey = "File";
-        private const string MapDatabaseContentsDateKey = "_changedate";
-        private const string MapDatabaseContentsHeaderKey = "_header";
-        private const string MapDatabaseContentsKey = "_contents";
-        private const string MapDatabaseWifiKey = "WiFi";
-        private const string MapDatabasePositionsKey = "Positions";
-
-        private string SearchConfigurationPath => System.AppDomain.CurrentDomain.BaseDirectory + "Config\\";
-
-        public ObservableCollection<string> OpenCommands { get; set; } = new ObservableCollection<string>() { "Open Zip File" };
-
         public ICommand OpenCommand { get; }
         private void OpenCallback(object parameter)
         {
@@ -136,6 +59,13 @@ namespace MobileDebug_WPF.WindowViewModel
             }
         }
 
+        private void ResetAll()
+        {
+            SystemInformation.Reset();
+            TableOfContents.Reset();
+            LogViewer.Reset();
+            WiFiViewer.Reset();
+        }
         private void OpenZipFile()
         {
             Microsoft.Win32.OpenFileDialog file = new Microsoft.Win32.OpenFileDialog
@@ -151,6 +81,8 @@ namespace MobileDebug_WPF.WindowViewModel
 
                 if (ExtractFile(file.FileName))
                 {
+                    ResetAll();
+
                     // AddToHistory(file.FileName);
                     SystemInformation.Load();
                     TableOfContents.Load();
@@ -181,44 +113,44 @@ namespace MobileDebug_WPF.WindowViewModel
             }
         }
 
-        //private class FileHistory
-        //{
-        //    public string Path { get; set; }
-        //    public bool IsDirectory { get; set; } = false;
-        //}
-        //private void AddToHistory(string filePath)
-        //{
-        //    Dictionary<string, FileHistory> history = GetOpenHistory();
+        private class FileHistory
+        {
+            public string Path { get; set; }
+            public bool IsDirectory { get; set; } = false;
+        }
+        private void AddToHistory(string filePath)
+        {
+            Dictionary<string, FileHistory> history = GetOpenHistory();
 
-        //    FileHistory fhFile;
-        //    if (!File.Exists(filePath) && !Directory.Exists(filePath))
-        //    {
-        //        var his = history.Where(s => s.Value.Path.Equals(filePath));
+            FileHistory fhFile;
+            if (!File.Exists(filePath) && !Directory.Exists(filePath))
+            {
+                var his = history.Where(s => s.Value.Path.Equals(filePath));
 
-        //        foreach (var fh in history.ToList())
-        //            history.Remove(fh.Key);
-        //    }
-        //    else
-        //    {
-        //        fhFile = new FileHistory()
-        //        {
-        //            Path = filePath,
-        //        };
-        //        if (File.Exists(filePath))
-        //            fhFile.IsDirectory = false;
-        //        else
-        //            fhFile.IsDirectory = true;
+                foreach (var fh in history.ToList())
+                    history.Remove(fh.Key);
+            }
+            else
+            {
+                fhFile = new FileHistory()
+                {
+                    Path = filePath,
+                };
+                if (File.Exists(filePath))
+                    fhFile.IsDirectory = false;
+                else
+                    fhFile.IsDirectory = true;
 
-        //        if (!history.ContainsKey(Path.GetFileName(fhFile.Path)))
-        //            history.Add(Path.GetFileName(fhFile.Path), fhFile);
-        //    }
+                if (!history.ContainsKey(Path.GetFileName(fhFile.Path)))
+                    history.Add(Path.GetFileName(fhFile.Path), fhFile);
+            }
 
-        //    App.Settings.SetValue("FileHistory", history);
+            App.Settings.SetValue("FileHistory", history);
 
-        //    //BuildOpenMenu();
-        //    //UpdateHistoryMenuItems(history);
-        //}
-        //private Dictionary<string, FileHistory> GetOpenHistory() => App.Settings.GetValue("FileHistory", new Dictionary<string, FileHistory>());
+            //BuildOpenMenu();
+            //UpdateHistoryMenuItems(history);
+        }
+        private Dictionary<string, FileHistory> GetOpenHistory() => App.Settings.GetValue("FileHistory", new Dictionary<string, FileHistory>());
 
         IDialogCoordinator _DialogCoordinator;
 
