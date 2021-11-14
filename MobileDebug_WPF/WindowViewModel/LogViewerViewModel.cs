@@ -103,7 +103,8 @@ namespace MobileDebug_WPF.WindowViewModel
                     LogViewerEntry logViewerEntry = new LogViewerEntry
                     {
                         Log = log,
-                        LogFileName = log.MultiLog ? file.Name : log.DisplayName,
+                        Name = log.MultiLog ? file.Name : log.DisplayName,
+                        Path = file.FullName,
                         OpenCommand = new RelayCommand(OpenCallback, c => true),
                         ViewCommand = new RelayCommand(ViewCallback, c => true),
                     };

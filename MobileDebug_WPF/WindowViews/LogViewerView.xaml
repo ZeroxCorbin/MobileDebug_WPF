@@ -107,7 +107,7 @@
 
                         <TextBlock>
                             <Hyperlink Command="{Binding OpenCommand}" CommandParameter="{Binding}">
-                                <Run Text="{Binding LogFileName}"/>
+                                <Run Text="{Binding Name}"/>
                             </Hyperlink>
                         </TextBlock>
 

@@ -12,19 +12,39 @@
         d:DataContext="{d:DesignInstance Type=WindowViewModels:MainWindowViewModel}"
         mc:Ignorable="d"
         d:DesignHeight="1024" d:DesignWidth="768" 
-        Loaded="Window_Loaded" 
         Title="{Binding Title, Mode=OneWay}"
         Left="{Binding Left, Mode=TwoWay}"
         Top="{Binding Top, Mode=TwoWay}"
-        WindowState="{Binding WindowState, Mode=TwoWay}"
-        Closing="Window_Closing">
+        WindowState="{Binding WindowState, Mode=TwoWay}">
+
+    <mah:MetroWindow.RightWindowCommands>
+        <mah:WindowCommands>>
+
+            <Button BorderThickness="0" 
+                        x:Name="btnLightTheme"
+                        Click="btnLightTheme_Click">
+                <Button.Content>
+                    <IconPacks:PackIconModern Width="20" Height="20" Kind="WeatherSun"/>
+                </Button.Content>
+
+            </Button>
+
+            <Button BorderThickness="0" 
+                        x:Name="btnDarkTheme"
+                        Click="btnDarkTheme_Click">
+                <Button.Content>
+                    <IconPacks:PackIconModern Width="20" Height="20" Kind="MoonWaningCrescent"/>
+                </Button.Content>
+            </Button>
+        </mah:WindowCommands>
+    </mah:MetroWindow.RightWindowCommands>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
@@ -47,11 +67,12 @@
         
         <WindowViews:TableOfContentsView x:Name="TableOfContentsExpander" Grid.Row="1" Grid.Column="1"/>
 
-        <mah:MetroTabControl Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" x:Name="tbcMain" Margin="3" >
+          <mah:MetroTabControl Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
             
             <WindowViews:LogViewerView x:Name="LogViewer" />
             
-            <mah:MetroTabItem x:Name="tabCrashLogs" Header="Crash Logs">
+            <WindowViews:WiFiViewerView x:Name="WiFiViewer" />
+            <!--<mah:MetroTabItem x:Name="tabCrashLogs" Header="Crash Logs">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -66,8 +87,8 @@
                     </ScrollViewer>
                     <TextBox x:Name="TxtCrashLogLines" Grid.Column="1" Grid.Row="0" Margin="3" TextWrapping="Wrap" VerticalAlignment="Top" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto"/>
                 </Grid>
-            </mah:MetroTabItem>
-            <mah:MetroTabItem x:Name="tabWiFiLogs" Header="WiFi">
+            </mah:MetroTabItem>-->
+            <!--<mah:MetroTabItem x:Name="tabWiFiLogs" Header="WiFi">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="28"/>
@@ -86,24 +107,24 @@
                         <StackPanel x:Name="flpWiFiLogs" Margin="3" CanVerticallyScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                     </ScrollViewer>
                     <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="3" HorizontalAlignment="Center">
-                        <!--<Button x:Name="BtnSaveWiFiDecibelsGraphImage" Click="BtnSaveWiFiDecibelsGraphImage_Click" Margin="10,1,0,1" HorizontalAlignment="Center">
+                        --><!--<Button x:Name="BtnSaveWiFiDecibelsGraphImage" Click="BtnSaveWiFiDecibelsGraphImage_Click" Margin="10,1,0,1" HorizontalAlignment="Center">
                             <Image Source="../Resources/SaveAs.bmp"/>
-                        </Button>-->
+                        </Button>--><!--
                         <Label x:Name="LblWiFiPlotDecibelsTitle" FontSize="16" Padding="5,2,0,0" VerticalContentAlignment="Center"/>
                     </StackPanel>
                     <oxy:PlotView x:Name="Chart_WiFiDecibels" Grid.Row="1" Grid.Column="2" />
                     <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="3" HorizontalAlignment="Center">
 
-                        <!--<Button x:Name="BtnSaveWiFiBaudGraphImage" Click="BtnSaveWiFiBaudGraphImage_Click" Margin="10,1,0,1" VerticalAlignment="Center">
+                        --><!--<Button x:Name="BtnSaveWiFiBaudGraphImage" Click="BtnSaveWiFiBaudGraphImage_Click" Margin="10,1,0,1" VerticalAlignment="Center">
                             <Image Source="../Resources/SaveAs.bmp"/>
-                        </Button>-->
+                        </Button>--><!--
                         <Label x:Name="LblWiFiPlotBaudTitle" FontSize="16" Padding="5,2,0,0" VerticalContentAlignment="Center"/>
                     </StackPanel>
                     <oxy:PlotView x:Name="Chart_WiFiBaud" Grid.Row="3" Grid.Column="1"/>
 
                 </Grid>
-            </mah:MetroTabItem>
-            <mah:MetroTabItem x:Name="tabBatteryLogs" Header="Battery">
+            </mah:MetroTabItem>-->
+            <!--<mah:MetroTabItem x:Name="tabBatteryLogs" Header="Battery">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="28"/>
@@ -208,8 +229,9 @@
                     </local:ZoomBorder>
 
                 </Grid>
-            </mah:MetroTabItem>
+            </mah:MetroTabItem>-->
         </mah:MetroTabControl>
+          
+        </Grid>
 
-    </Grid>
 </mah:MetroWindow>

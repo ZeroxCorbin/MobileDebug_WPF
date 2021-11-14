@@ -40,6 +40,7 @@ namespace MobileDebug_WPF.WindowViewModel
         public SystemInformationViewModel SystemInformation { get; }
         public TableOfContentsViewModel TableOfContents { get; }
         public LogViewerViewModel LogViewer { get; }
+        public WiFiViewerViewModel WiFiViewer { get; }
 
         public class LogDetails_class
         {
@@ -154,6 +155,8 @@ namespace MobileDebug_WPF.WindowViewModel
                     SystemInformation.Load();
                     TableOfContents.Load();
                     LogViewer.Load(SystemInformation.IsEM);
+                    if(!SystemInformation.IsEM)
+                        WiFiViewer.Load();
                 }
                 //Thread thread = new Thread(() => RunThread());
                 //thread.SetApartmentState(ApartmentState.STA);
@@ -226,6 +229,7 @@ namespace MobileDebug_WPF.WindowViewModel
             SystemInformation = new SystemInformationViewModel();
             TableOfContents = new TableOfContentsViewModel();
             LogViewer = new LogViewerViewModel();
+            WiFiViewer = new WiFiViewerViewModel();
 
             OpenCommand = new RelayCommand(OpenCallback, c => true);
         }

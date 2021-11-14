@@ -1,0 +1,105 @@
+﻿<mah:MetroTabItem x:Class="MobileDebug_WPF.WindowViews.WiFiViewerView"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:IconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:WindowViewModel="clr-namespace:MobileDebug_WPF.WindowViewModel"
+             xmlns:Models="clr-namespace:MobileDebug_WPF.Models"
+             xmlns:FileSearch="clr-namespace:FileSearch;assembly=FileSearch"
+             xmlns:Config="clr-namespace:MobileDebug_WPF.Config"
+             xmlns:local="clr-namespace:MobileDebug_WPF.WindowViews"
+             xmlns:oxy="http://oxyplot.org/wpf"
+                  xmlns:oxy2="clr-namespace:OxyPlot;assembly=OxyPlot"
+             d:DataContext="{d:DesignInstance Type=WindowViewModel:WiFiViewerViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="400">
+
+    <mah:MetroTabItem.HeaderTemplate>
+        <ItemContainerTemplate DataType="{x:Type WindowViewModel:WiFiViewerViewModel}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="WiFi Graphs"/>
+                <mah:ProgressRing Foreground="{DynamicResource AccentColorBrush}" Width="16" Height="16" IsActive="{Binding RelativeSource={RelativeSource AncestorType=mah:MetroTabItem}, Path=DataContext.IsLoading}" />
+            </StackPanel>
+        </ItemContainerTemplate>
+    </mah:MetroTabItem.HeaderTemplate>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <StackPanel Grid.Row="0" Grid.Column="0">
+            <ListView ItemsSource="{Binding WiFiSSIDDetails}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+
+                            <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type mah:MetroTabItem}}, Path=ViewAllCommand}" 
+                                                CommandParameter="{Binding}" BorderThickness="0" Margin="1" Padding="1">
+
+                                    <Label Content="{Binding}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
+                            </Button>
+
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListView>
+        </StackPanel>
+        
+        <Grid Grid.Row="1" Grid.Column="0">
+            <TreeView ItemsSource="{Binding WiFiViewerDetails}" Padding="10">
+                <TreeView.ItemTemplate>
+
+                    <HierarchicalDataTemplate ItemsSource = "{Binding SearchResults}"
+                                              DataType = "{x:Type Models:WiFiViewerEntry}">
+
+                        <TextBlock>
+                            <Hyperlink Command="{Binding OpenCommand}" CommandParameter="{Binding}">
+                                <Run Text="{Binding Name}"/>
+                            </Hyperlink>
+                        </TextBlock>
+
+                        <HierarchicalDataTemplate.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+
+                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TreeViewItem}, AncestorLevel=2}, Path=DataContext.ViewCommand}" 
+                                                CommandParameter="{Binding}" BorderThickness="0" Margin="1" Padding="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Label Content="{Binding Key}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
+                                            <Label Content="{Binding Value.Count}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
+                                        </StackPanel>
+
+                                    </Button>
+
+                                </Grid>
+
+                            </DataTemplate>
+                        </HierarchicalDataTemplate.ItemTemplate>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Grid>
+        
+        <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
+            <oxy:PlotView x:Name="DecibelPlot" Model="{Binding DecibelPlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}">
+
+            </oxy:PlotView>
+        </Grid>
+        
+        <Grid Grid.Row="2" Grid.Column="1" >
+            <oxy:PlotView x:Name="BaudPlot" Model="{Binding BaudPlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>            
+        </Grid>
+
+
+        
+    </Grid>
+</mah:MetroTabItem>
