@@ -34,6 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="WindowViews\BatteryViewerView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WindowViews\WiFiViewerView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -64,6 +67,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="WindowViews\BatteryViewerView.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="WindowViews\WiFiViewerView.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>

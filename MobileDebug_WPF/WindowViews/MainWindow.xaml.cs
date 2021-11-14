@@ -52,6 +52,7 @@ namespace MobileDebug_WPF
             TableOfContentsExpander.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).TableOfContents;
             LogViewer.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).LogViewer;
             WiFiViewer.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).WiFiViewer;
+            BatteryViewer.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).BatteryViewer;
 
             _ = SetBinding(WidthProperty, new Binding("Width") { Source = DataContext, Mode = BindingMode.TwoWay });
             _ = SetBinding(HeightProperty, new Binding("Height") { Source = DataContext, Mode = BindingMode.TwoWay });

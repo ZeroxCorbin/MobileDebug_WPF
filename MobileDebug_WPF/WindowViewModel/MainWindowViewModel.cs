@@ -41,6 +41,7 @@ namespace MobileDebug_WPF.WindowViewModel
         public TableOfContentsViewModel TableOfContents { get; }
         public LogViewerViewModel LogViewer { get; }
         public WiFiViewerViewModel WiFiViewer { get; }
+        public BatteryViewerViewModel BatteryViewer { get; }
 
         public ICommand OpenCommand { get; }
         private void OpenCallback(object parameter)
@@ -48,7 +49,7 @@ namespace MobileDebug_WPF.WindowViewModel
             switch ((string)parameter)
             {
                 case "Open Zip File":
-                   Task.Run(()=> OpenZipFile());
+                    Task.Run(() => OpenZipFile());
                     break;
                 case "Open Folder":
                     break;
@@ -65,6 +66,7 @@ namespace MobileDebug_WPF.WindowViewModel
             TableOfContents.Reset();
             LogViewer.Reset();
             WiFiViewer.Reset();
+            BatteryViewer.Reset();
         }
         private void OpenZipFile()
         {
@@ -87,8 +89,12 @@ namespace MobileDebug_WPF.WindowViewModel
                     SystemInformation.Load();
                     TableOfContents.Load();
                     LogViewer.Load(SystemInformation.IsEM);
-                    if(!SystemInformation.IsEM)
+                    if (!SystemInformation.IsEM)
+                    {
                         WiFiViewer.Load();
+                        BatteryViewer.Load();
+                    }
+
                 }
                 //Thread thread = new Thread(() => RunThread());
                 //thread.SetApartmentState(ApartmentState.STA);
@@ -162,6 +168,7 @@ namespace MobileDebug_WPF.WindowViewModel
             TableOfContents = new TableOfContentsViewModel();
             LogViewer = new LogViewerViewModel();
             WiFiViewer = new WiFiViewerViewModel();
+            BatteryViewer = new BatteryViewerViewModel();
 
             OpenCommand = new RelayCommand(OpenCallback, c => true);
         }

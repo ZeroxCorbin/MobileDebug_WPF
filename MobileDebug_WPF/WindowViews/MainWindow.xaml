@@ -81,6 +81,8 @@
             <WindowViews:LogViewerView x:Name="LogViewer" />
             
             <WindowViews:WiFiViewerView x:Name="WiFiViewer" />
+
+            <WindowViews:BatteryViewerView x:Name="BatteryViewer" />
             <!--<mah:MetroTabItem x:Name="tabCrashLogs" Header="Crash Logs">
                 <Grid>
                     <Grid.RowDefinitions>

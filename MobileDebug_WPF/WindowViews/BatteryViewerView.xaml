@@ -1,0 +1,92 @@
+﻿<mah:MetroTabItem x:Class="MobileDebug_WPF.WindowViews.BatteryViewerView"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:IconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:WindowViewModel="clr-namespace:MobileDebug_WPF.WindowViewModel"
+             xmlns:Models="clr-namespace:MobileDebug_WPF.Models"
+             xmlns:FileSearch="clr-namespace:FileSearch;assembly=FileSearch"
+             xmlns:Config="clr-namespace:MobileDebug_WPF.Config"
+                  xmlns:MobileLogs="clr-namespace:MobileLogs;assembly=MobileLogs"
+             xmlns:local="clr-namespace:MobileDebug_WPF.WindowViews"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             d:DataContext="{d:DesignInstance Type=WindowViewModel:BatteryViewerViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="400"
+                  Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+   
+    <mah:MetroTabItem.HeaderTemplate>
+        <ItemContainerTemplate DataType="{x:Type WindowViewModel:BatteryViewerViewModel}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Battery Graphs"/>
+                <mah:ProgressRing Foreground="{DynamicResource AccentColorBrush}" Width="16" Height="16" IsActive="{Binding RelativeSource={RelativeSource AncestorType=mah:MetroTabItem}, Path=DataContext.IsLoading}" />
+            </StackPanel>
+        </ItemContainerTemplate>
+    </mah:MetroTabItem.HeaderTemplate>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="0" Grid.Column="0" >
+            <Button Content="View All" Command="{Binding ViewAllCommand}"/>
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="2">
+            <TreeView ItemsSource="{Binding BatteryViewerDetails}" Padding="10">
+                <TreeView.ItemTemplate>
+
+                    <HierarchicalDataTemplate ItemsSource = "{Binding ResultStrings}"
+                                              DataType = "{x:Type Models:BatteryViewerEntry}">
+
+                        <TextBlock>
+                            <Hyperlink Command="{Binding OpenCommand}" CommandParameter="{Binding}">
+                                <Run Text="{Binding Name}"/>
+                            </Hyperlink>
+                        </TextBlock>
+
+                        <HierarchicalDataTemplate.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+
+                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TreeViewItem}, AncestorLevel=2}, Path=DataContext.ViewCommand}" 
+                                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TreeViewItem}, AncestorLevel=2}, Path=DataContext}" BorderThickness="0" Margin="1" Padding="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Label Content="{Binding}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
+                                            <!--<Label Content="{Binding Value.Count}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>-->
+                                        </StackPanel>
+
+                                    </Button>
+
+                                </Grid>
+
+                            </DataTemplate>
+                        </HierarchicalDataTemplate.ItemTemplate>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Grid>
+        
+        <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
+            <oxy:PlotView x:Name="DecibelPlot" Model="{Binding StatePlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}">
+
+            </oxy:PlotView>
+        </Grid>
+        
+        <Grid Grid.Row="2" Grid.Column="1" >
+            <oxy:PlotView x:Name="BaudPlot" Model="{Binding VoltagePlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>            
+        </Grid>
+
+
+        
+    </Grid>
+</mah:MetroTabItem>
