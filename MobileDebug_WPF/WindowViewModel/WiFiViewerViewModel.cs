@@ -171,18 +171,19 @@ namespace MobileDebug_WPF.WindowViewModel
             WiFiLogsDisplayPlot(results);
         }
 
-        public ICommand ViewAllCommand;
+        public ICommand ViewAllCommand { get; }
         private void ViewAllCallback(object parameter)
         {
             Dictionary<string, List<WifiLogData>> results = new Dictionary<string, List<WifiLogData>>();
+            results.Add((string)parameter, new List<WifiLogData>());
 
             foreach (var log in WiFiViewerDetails)
-                foreach (var res in log.SearchResults)
-                    if (!results.ContainsKey(res.Key))
-                        results.Add(res.Key, res.Value);
-                    else
-                        foreach (var idv in res.Value)
-                            results[res.Key].Append(idv);
+            {
+                if (log.SearchResults.ContainsKey((string)parameter))
+                {
+                    results[(string)parameter].AddRange(log.SearchResults[((string)parameter)]);
+                }
+            }
 
             WiFiLogsDisplayPlot(results);
         }

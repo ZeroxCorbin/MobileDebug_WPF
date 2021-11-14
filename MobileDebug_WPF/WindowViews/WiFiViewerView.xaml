@@ -39,11 +39,11 @@
         
         <StackPanel Grid.Row="0" Grid.Column="0">
             <ListView ItemsSource="{Binding WiFiSSIDDetails}">
-                <ListBox.ItemTemplate>
+                <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid>
 
-                            <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type mah:MetroTabItem}}, Path=ViewAllCommand}" 
+                            <Button Command="{Binding DataContext.ViewAllCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}" 
                                                 CommandParameter="{Binding}" BorderThickness="0" Margin="1" Padding="1">
 
                                     <Label Content="{Binding}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
@@ -51,7 +51,7 @@
 
                         </Grid>
                     </DataTemplate>
-                </ListBox.ItemTemplate>
+                </ListView.ItemTemplate>
             </ListView>
         </StackPanel>
         
