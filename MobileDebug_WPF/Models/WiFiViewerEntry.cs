@@ -14,6 +14,7 @@ namespace MobileDebug_WPF.Models
         public string Path { get; set; }
         public ICommand OpenCommand { get; set; }
         public ICommand ViewCommand { get; set; }
+        public DateTime DateTime { get; set; }
         public Dictionary<string, List<WifiLogData>> SearchResults { get => Log.Results; }
         public WifiLogs Log { get; set; }
     }

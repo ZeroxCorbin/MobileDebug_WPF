@@ -43,6 +43,11 @@
 
         <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="2">
             <TreeView ItemsSource="{Binding BatteryViewerDetails}" Padding="10">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource MahApps.Styles.TreeViewItem}">
+                        <Setter Property="IsExpanded" Value="true"/>
+                    </Style>
+                </TreeView.ItemContainerStyle>
                 <TreeView.ItemTemplate>
 
                     <HierarchicalDataTemplate ItemsSource = "{Binding ResultStrings}"
@@ -52,6 +57,9 @@
                             <Hyperlink Command="{Binding OpenCommand}" CommandParameter="{Binding}">
                                 <Run Text="{Binding Name}"/>
                             </Hyperlink>
+                            <LineBreak/>
+                            <Run Text="IND" Foreground="Transparent" />
+                            <Label Content="{Binding DateTime}"/>
                         </TextBlock>
 
                         <HierarchicalDataTemplate.ItemTemplate>

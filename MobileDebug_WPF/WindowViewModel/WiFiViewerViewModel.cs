@@ -139,6 +139,7 @@ namespace MobileDebug_WPF.WindowViewModel
                     Name = log.Name,
                     Path = log.FullName,
                     Log = new WifiLogs(log.FullName),
+                    DateTime = log.LastWriteTime,
                     OpenCommand = new RelayCommand(OpenCallback, c => true),
                     ViewCommand = new RelayCommand(ViewCallback, c => true),
                 };

@@ -13,7 +13,7 @@ namespace MobileDebug_WPF.Models
         public string Path { get; set; }
         public ICommand OpenCommand { get; set; }
         public ICommand ViewCommand { get; set; }
-
+        public DateTime DateTime { get; set; }
         public Dictionary<string, List<FileSearchResults>> SearchResults { get; set; } = new Dictionary<string, List<FileSearchResults>>();
         public LogDetailsLog Log { get; set; }
     }

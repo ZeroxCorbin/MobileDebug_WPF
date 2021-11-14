@@ -37,7 +37,7 @@ namespace MobileDebug_WPF.WindowViewModel
         public List<FileSearchResults> LogData { get => _LogData; private set => Set(ref _LogData, value); }
         private List<FileSearchResults> _LogData;
 
-private object BufferDataLock = new object();
+        private object BufferDataLock = new object();
         public ObservableCollection<FileSearchResults> BufferData { get; } = new ObservableCollection<FileSearchResults>();
 
         public FileSearchResults SelectedLogData
@@ -55,8 +55,12 @@ private object BufferDataLock = new object();
                 }
                 else
                 {
+                    var sortedStr = from item in value.Buffer.Raw
+                                    orderby (item != null) ? item.LineNumber : 0
+                                    select item;
+
                     BufferData.Clear();
-                    foreach (FileSearchResults s in value.Buffer.Raw)
+                    foreach (var s in sortedStr)
                         BufferData.Add(s);
                     OnPropertyChanged("BufferData");
                 }
@@ -99,7 +103,6 @@ private object BufferDataLock = new object();
         {
             LogDetails serial = LogDetails_Serializer.Load($"{App.UserDataDirectory}LogDetails.xml");
 
-            int i = -1;
             foreach (LogDetailsLog log in serial.Log)
             {
                 if (IsEM && !log.isEM) continue;
@@ -120,29 +123,20 @@ private object BufferDataLock = new object();
 
                 foreach (FileInfo file in lst)
                 {
-                    LogIndices ind = new LogIndices();
-                    bool first = true;
-                    int ii = -1;
-
                     LogViewerEntry logViewerEntry = new LogViewerEntry
                     {
                         Log = log,
                         Name = log.MultiLog ? file.Name : log.DisplayName,
                         Path = file.FullName,
+                        DateTime = file.LastWriteTime,
                         OpenCommand = new RelayCommand(OpenCallback, c => true),
                         ViewCommand = new RelayCommand(ViewCallback, c => true),
                     };
 
                     foreach (LogDetailsLogSearch ser in log.Search)
                     {
-                        ii++;
-
                         if (IsEM && !ser.isEM) continue;
                         if (!IsEM && !ser.isLD) continue;
-
-                        //UpdateStatus("Processing log for (" + ser.RegEx2Match + "): " + file.Name);
-
-
 
                         IEnumerable<FileSearchResults> searchRes = FileSearch.FileSearch.Find(file.FullName, ser.RegEx2Match, false);
 
@@ -157,44 +151,6 @@ private object BufferDataLock = new object();
                         {
                             logViewerEntry.SearchResults.Add(ser.DisplayName, temp);
                         }
-                        //if (searchRes.Count() == 0) continue;
-
-
-                        //logViewerEntry.SearchResults.Add(ser.DisplayName, (List<FileSearchResults>)searchRes.ToList());
-
-                        i++;
-
-                        ind.log = i;
-                        ind.search = ii;
-
-                        //if (first)
-                        //{
-                        //    Hyperlink hl = new Hyperlink()
-                        //    {
-                        //        Tag = log.MultiLog ? file.Name : ld.Log.DisplayName,
-                        //    };
-                        //    hl.Inlines.Add((string)hl.Tag);
-                        //    hl.Click += LogHyperLink_Click;
-
-                        //    Label lb = new Label
-                        //    {
-                        //        Tag = ind,
-                        //        Content = hl
-                        //    };
-                        //    flpLogs.Children.Add(lb);
-
-                        //    first = false;
-                        //}
-
-                        //Button but = new Button
-                        //{
-                        //    Tag = ind,
-                        //    Content = log.Search[ii].DisplayName,
-                        //    Margin = new Thickness(3)
-                        //};
-                        //but.Click += LogButton_Click;
-
-                        //flpLogs.Children.Add(but);
                     }
 
                     LogViewerDetails.Add(logViewerEntry);
