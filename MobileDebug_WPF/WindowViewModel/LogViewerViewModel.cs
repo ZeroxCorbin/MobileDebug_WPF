@@ -101,7 +101,7 @@ namespace MobileDebug_WPF.WindowViewModel
 
         private void SetupLogs()
         {
-            LogDetails serial = LogDetails_Serializer.Load($"{App.UserDataDirectory}LogDetails.xml");
+            LogDetails serial = LogDetails_Serializer.Load(Path.Join(App.UserDataDirectory, "Config\\", "LogDetails.xml"));
 
             foreach (LogDetailsLog log in serial.Log)
             {

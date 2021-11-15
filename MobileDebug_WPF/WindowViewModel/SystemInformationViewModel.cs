@@ -25,9 +25,9 @@ namespace MobileDebug_WPF.WindowViewModel
         public bool IsLoading
         {
             get { return _IsLoading; }
-            set { Set( ref _IsLoading , value); }
+            set { Set(ref _IsLoading, value); }
         }
- private bool _IsLoading;
+        private bool _IsLoading;
 
         private object SystemEntriesLock = new object();
         public ObservableCollection<SystemInformationHeader> SystemEntries { get; set; } = new ObservableCollection<SystemInformationHeader>();
@@ -63,7 +63,7 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         private void LoadSystemHealth()
         {
-            SystemHealth_Serializer.SystemHealth serial = SystemHealth_Serializer.Load($"{App.UserDataDirectory}SystemHealth.xml");
+            SystemHealth_Serializer.SystemHealth serial = SystemHealth_Serializer.Load(Path.Join(App.UserDataDirectory, "Config\\", "SystemHealth.xml"));
 
             foreach (SystemHealth_Serializer.SystemHealthHeading head in serial.Heading)
             {
@@ -86,7 +86,9 @@ namespace MobileDebug_WPF.WindowViewModel
                     if (!string.IsNullOrEmpty(line))
                         res = Convert.ToDouble(line) * Convert.ToDouble(label.Multiplier);
 
-                    header.SystemInformationEntries.Add(new SystemInformationHeader() { Name = label.Name + res.ToString() + label.Tail,
+                    header.SystemInformationEntries.Add(new SystemInformationHeader()
+                    {
+                        Name = label.Name + res.ToString() + label.Tail,
                         IsExpanded = false,
                     });
                 }
@@ -96,7 +98,7 @@ namespace MobileDebug_WPF.WindowViewModel
         }//Updated
         private void LoadSystemDetails()
         {
-            SystemDetails_Serializer.SystemDetails serial = SystemDetails_Serializer.Load($"{App.UserDataDirectory}SystemDetails.xml");
+            SystemDetails_Serializer.SystemDetails serial = SystemDetails_Serializer.Load(Path.Join(App.UserDataDirectory, "Config\\", "SystemDetails.xml"));
 
             foreach (SystemDetails_Serializer.SystemDetailsHeading head in serial.Heading)
             {
@@ -117,11 +119,15 @@ namespace MobileDebug_WPF.WindowViewModel
                     string line = GetLineFromFile(App.WorkingDirectory + label.FilePath);
 
                     if (!string.IsNullOrEmpty(line))
-                        header.SystemInformationEntries.Add(new SystemInformationHeader() { Name = label.Name + line.Replace("\t", " , "),
+                        header.SystemInformationEntries.Add(new SystemInformationHeader()
+                        {
+                            Name = label.Name + line.Replace("\t", " , "),
                             IsExpanded = false,
                         });
                     else
-                        header.SystemInformationEntries.Add(new SystemInformationHeader() { Name = "File Not Found!",
+                        header.SystemInformationEntries.Add(new SystemInformationHeader()
+                        {
+                            Name = "File Not Found!",
                             IsExpanded = false,
                         });
                 }
@@ -131,7 +137,7 @@ namespace MobileDebug_WPF.WindowViewModel
         }//Updated
         private void LoadSystemApps()
         {
-            SystemApps_Serializer.SystemApps serial = SystemApps_Serializer.Load($"{App.UserDataDirectory}SystemApps.xml");
+            SystemApps_Serializer.SystemApps serial = SystemApps_Serializer.Load(Path.Join(App.UserDataDirectory, "Config\\", "SystemApps.xml"));
 
             DirectoryInfo di = new DirectoryInfo(App.WorkingDirectory + serial.Path);
 
