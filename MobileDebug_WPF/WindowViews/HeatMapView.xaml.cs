@@ -1,5 +1,6 @@
 ﻿using ControlzEx.Theming;
 using MahApps.Metro.Controls;
+using MobileDebug_WPF.WindowViewModel;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,6 +31,16 @@ namespace MobileDebug_WPF.WindowViews
 
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
         {
+            ((HeatMapViewModel)DataContext).ThemeChanged(e.NewTheme.BaseColorScheme == "Dark" ? true : false);
+        }
+
+        private void MetroTabItem_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (DataContext is HeatMapViewModel vm)
+            {
+                var theme = ThemeManager.Current.DetectTheme();
+                vm.ThemeChanged(theme.BaseColorScheme == "Dark");
+            }
 
         }
     }

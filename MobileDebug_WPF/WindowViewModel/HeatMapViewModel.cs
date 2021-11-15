@@ -26,6 +26,13 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         private bool _IsVisible;
 
+        public bool IsDarkTheme
+        {
+            get { return _IsDarkTheme; }
+            set { Set(ref _IsDarkTheme, value); }
+        }
+        private bool _IsDarkTheme;
+
         public BitmapImage HeatMapImage
         {
             get { return _HeatMapImage; }
@@ -67,7 +74,7 @@ namespace MobileDebug_WPF.WindowViewModel
             _MapFile.Map.LoggedWifi = wifi;
             _MapFile.Map.MakeMultiThreaded();
 
-            string bmp = MobileMap.MapUtils.GetBitmapString(_MapFile.Map, 4096, 4096);
+            string bmp = MobileMap.MapUtils.GetBitmapString(_MapFile.Map, 4096, 4096, IsDarkTheme);
 
             Application.Current.Dispatcher.Invoke(new Action(() => { HeatMapImage = HeatMap.Base64StringToBitmap(bmp); }));
             
@@ -86,6 +93,21 @@ namespace MobileDebug_WPF.WindowViewModel
                     _MapFile.Map.Destroy();
         }
 
+        public void ThemeChanged(bool dark)
+        {
+            IsDarkTheme = dark;
+
+            if(_MapFile != null)
+            {
+                if(_MapFile.Map != null)
+                {
+                    string bmp = MobileMap.MapUtils.GetBitmapString(_MapFile.Map, 4096, 4096, IsDarkTheme);
+
+                    Application.Current.Dispatcher.Invoke(new Action(() => { HeatMapImage = HeatMap.Base64StringToBitmap(bmp); }));
+                }
+            }
+        }
+
         private string GetMapFile()
         {
             try
@@ -93,14 +115,16 @@ namespace MobileDebug_WPF.WindowViewModel
                 string file = null;
                 string name = null;
                 string path = Path.Join(App.WorkingDirectory, @"\usr\local\aramConfig\aramConfig.txt");
+                if(!File.Exists(path))
+                    path = Path.Join(App.WorkingDirectory, @"\usr\local\aramConfig\centralConfig.txt");
 
                 foreach (string line in System.IO.File.ReadLines(path))
                 {
                     if (line.StartsWith("Map ", StringComparison.Ordinal))
                     {
                         name = line.Replace("Map ", "");
-                        int loc = name.IndexOf(' ');
-                        name = name.Substring(0, loc);
+                        int loc = name.IndexOf(".map");
+                        name = name.Substring(0, loc+4);
                         break;
                     }
                 }

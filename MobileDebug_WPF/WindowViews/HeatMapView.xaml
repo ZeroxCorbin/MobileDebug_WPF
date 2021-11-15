@@ -13,8 +13,8 @@
              d:DataContext="{d:DesignInstance Type=WindowViewModel:HeatMapViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="400"
-                  Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-   
+                  Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" DataContextChanged="MetroTabItem_DataContextChanged">
+
     <mah:MetroTabItem.HeaderTemplate>
         <ItemContainerTemplate DataType="{x:Type WindowViewModel:HeatMapViewModel}">
             <StackPanel Orientation="Horizontal">
@@ -24,10 +24,12 @@
             </StackPanel>
         </ItemContainerTemplate>
     </mah:MetroTabItem.HeaderTemplate>
+    
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+        <WindowViewModel:ZoomBorder>
+            <Image Source="{Binding HeatMapImage}" />
+        </WindowViewModel:ZoomBorder>
+    </ScrollViewer>
 
-    <Grid>
-        <Image Source="{Binding HeatMapImage}"/>
 
-
-    </Grid>
 </mah:MetroTabItem>

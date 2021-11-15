@@ -54,6 +54,7 @@ namespace MobileDebug_WPF
             WiFiViewer.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).WiFiViewer;
             BatteryViewer.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).BatteryViewer;
             HeatMapViewer.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).HeatMapViewer;
+
             _ = SetBinding(WidthProperty, new Binding("Width") { Source = DataContext, Mode = BindingMode.TwoWay });
             _ = SetBinding(HeightProperty, new Binding("Height") { Source = DataContext, Mode = BindingMode.TwoWay });
 
