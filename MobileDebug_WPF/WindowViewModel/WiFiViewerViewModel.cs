@@ -109,6 +109,7 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         public void Reset()
         {
+            IsVisible = false;
             IsLoading = false;
 
             WiFiViewerDetails.Clear();
@@ -187,6 +188,24 @@ namespace MobileDebug_WPF.WindowViewModel
             }
 
             WiFiLogsDisplayPlot(results);
+        }
+        public Dictionary<string, List<WifiLogData>> GetAllEntries()
+        {
+            Dictionary<string, List<WifiLogData>> results = new Dictionary<string, List<WifiLogData>>();
+            
+
+            foreach (var log in WiFiViewerDetails)
+            {
+                foreach(var res in log.SearchResults)
+                {
+                    if(!results.ContainsKey(res.Key))
+                        results.Add(res.Key, res.Value);
+                    else
+                        results[res.Key].AddRange(res.Value);
+                }
+            }
+
+            return results;
         }
         private void WiFiLogsDisplayPlot(Dictionary<string, List<WifiLogData>> wifiLogs)
         {

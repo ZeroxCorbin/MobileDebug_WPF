@@ -42,6 +42,7 @@ namespace MobileDebug_WPF.WindowViewModel
         public LogViewerViewModel LogViewer { get; }
         public WiFiViewerViewModel WiFiViewer { get; }
         public BatteryViewerViewModel BatteryViewer { get; }
+        public HeatMapViewModel HeatMapViewer { get; }
 
         public ICommand OpenCommand { get; }
         private void OpenCallback(object parameter)
@@ -67,6 +68,7 @@ namespace MobileDebug_WPF.WindowViewModel
             LogViewer.Reset();
             WiFiViewer.Reset();
             BatteryViewer.Reset();
+            HeatMapViewer.Reset();
         }
         private void OpenZipFile()
         {
@@ -80,7 +82,6 @@ namespace MobileDebug_WPF.WindowViewModel
 
             if ((bool)file.ShowDialog())
             {
-
                 if (ExtractFile(file.FileName))
                 {
                     ResetAll();
@@ -93,12 +94,13 @@ namespace MobileDebug_WPF.WindowViewModel
                     {
                         WiFiViewer.Load();
                         BatteryViewer.Load();
+                        HeatMapViewer.Load(WiFiViewer.GetAllEntries());
                     }
-
+                    else
+                    {
+                        HeatMapViewer.Load(null);
+                    }
                 }
-                //Thread thread = new Thread(() => RunThread());
-                //thread.SetApartmentState(ApartmentState.STA);
-                //thread.Start();
             }
         }
         private bool ExtractFile(string fileName)
@@ -169,6 +171,7 @@ namespace MobileDebug_WPF.WindowViewModel
             LogViewer = new LogViewerViewModel();
             WiFiViewer = new WiFiViewerViewModel();
             BatteryViewer = new BatteryViewerViewModel();
+            HeatMapViewer = new HeatMapViewModel();
 
             OpenCommand = new RelayCommand(OpenCallback, c => true);
         }

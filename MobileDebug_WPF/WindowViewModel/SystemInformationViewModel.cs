@@ -83,47 +83,12 @@ namespace MobileDebug_WPF.WindowViewModel
 
                     string line = GetLineFromFile(App.WorkingDirectory + label.FilePath);
                     double res = 0;
-                    if (line != null)
+                    if (!string.IsNullOrEmpty(line))
                         res = Convert.ToDouble(line) * Convert.ToDouble(label.Multiplier);
 
                     header.SystemInformationEntries.Add(new SystemInformationHeader() { Name = label.Name + res.ToString() + label.Tail,
                         IsExpanded = false,
                     });
-                    //    TextBox txtLabel = new TextBox()
-                    //    {
-                    //        Text = label.Name + res.ToString() + label.Tail,
-                    //        ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                    //        IsReadOnly = true,
-                    //        BorderThickness = new Thickness(0),
-                    //        Margin = new Thickness(3)
-                    //    };
-                    //    TreeViewItem tviLabel = new TreeViewItem()
-                    //    {
-                    //        Header = txtLabel,
-                    //        ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                    //    };
-                    //    tviHeading.Items.Add(tviLabel);
-
-                    //    double thres;
-
-                    //    if (IsEM) thres = Convert.ToDouble(label.Threshold_em);
-                    //    else thres = Convert.ToDouble(label.Threshold_ld);
-
-                    //    if (label.Greater)
-                    //    {
-                    //        if (res > thres)
-                    //            txtLabel.Background = Brushes.LightYellow;
-                    //        else
-                    //            txtLabel.Background = Brushes.LightGreen;
-                    //    }
-                    //    else
-                    //    {
-                    //        if (res < thres)
-                    //            txtLabel.Background = Brushes.LightYellow;
-                    //        else
-                    //            txtLabel.Background = Brushes.LightGreen;
-                    //    }
-
                 }
 
                 SystemEntries.Add(header);
@@ -150,15 +115,8 @@ namespace MobileDebug_WPF.WindowViewModel
                     if (!IsEM && !label.isLD) continue;
 
                     string line = GetLineFromFile(App.WorkingDirectory + label.FilePath);
-                    //TextBox txtLabel = new TextBox()
-                    //{
-                    //    IsReadOnly = true,
-                    //    ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                    //    BorderThickness = new Thickness(0),
-                    //    Margin = new Thickness(3)
-                    //};
 
-                    if (line != null)
+                    if (!string.IsNullOrEmpty(line))
                         header.SystemInformationEntries.Add(new SystemInformationHeader() { Name = label.Name + line.Replace("\t", " , "),
                             IsExpanded = false,
                         });
@@ -166,13 +124,6 @@ namespace MobileDebug_WPF.WindowViewModel
                         header.SystemInformationEntries.Add(new SystemInformationHeader() { Name = "File Not Found!",
                             IsExpanded = false,
                         });
-
-                    //TreeViewItem tviLabel = new TreeViewItem()
-                    //{
-                    //    Header = txtLabel,
-                    //    ToolTip = new ToolTip() { Visibility = Visibility.Collapsed },
-                    //};
-                    //tviHeading.Items.Add(tviLabel);
                 }
 
                 SystemEntries.Add(header);

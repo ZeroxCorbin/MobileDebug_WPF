@@ -31,10 +31,15 @@ namespace MobileDebug_WPF.Models
 
     public class HeatMap
     {
+        public HeatMap(MapFile mapFile)
+        {
+            MapFile = mapFile;
+        }
+
         private MapFile MapFile;
         private List<HeatPoint> HeatPoints { get; set; } = new List<HeatPoint>();
 
-        public void GetHeatMapPoints()
+        private void LoadHeatMapPoints()
         {
             if (MapFile.Map.LoggedWifi != null)
             {
@@ -70,8 +75,10 @@ namespace MobileDebug_WPF.Models
             }
         }
 
-        private System.Windows.Controls.Image DrawWiFiHeatMap(int width, int height)
+        public string DrawWiFiHeatMap(int width, int height)
         {
+
+            LoadHeatMapPoints();
 
             //UpdateStatus("Drawing WiFi Heat Map");
 
@@ -112,9 +119,10 @@ namespace MobileDebug_WPF.Models
             {
                 bmp.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
                 SigBase64 = Convert.ToBase64String(memory.GetBuffer());
+                bmp.Dispose();
             }
 
-            return new System.Windows.Controls.Image() { Source = Base64StringToBitmap(SigBase64) };
+            return SigBase64;
         }
         private System.Drawing.Bitmap DrawWiFiHeatMapFromLog(System.Drawing.Bitmap bSurface)
         {
@@ -224,7 +232,7 @@ namespace MobileDebug_WPF.Models
             double radians = (Math.PI / 180) * degrees;
             return (radians);
         }
-        public System.Drawing.Bitmap Colorize(System.Drawing.Bitmap Mask, byte Alpha)
+        private System.Drawing.Bitmap Colorize(System.Drawing.Bitmap Mask, byte Alpha)
         {
             // Create new bitmap to act as a work surface for the colorization process
             System.Drawing.Bitmap Output = new System.Drawing.Bitmap(Mask.Width, Mask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -262,7 +270,7 @@ namespace MobileDebug_WPF.Models
             }
             return OutputMap;
         }
-        public BitmapImage Base64StringToBitmap(string base64String)
+        public static BitmapImage Base64StringToBitmap(string base64String)
         {
             BitmapImage bitmapImage = new BitmapImage();
             byte[] byteBuffer = Convert.FromBase64String(base64String);
@@ -274,6 +282,7 @@ namespace MobileDebug_WPF.Models
                 bitmapImage.StreamSource = memoryStream;
                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                 bitmapImage.EndInit();
+                bitmapImage.Freeze();
             }
 
             return bitmapImage;

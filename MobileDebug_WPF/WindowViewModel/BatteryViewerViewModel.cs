@@ -99,6 +99,7 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         public void Reset()
         {
+            IsVisible = false;
             IsLoading = false;
 
             BatteryViewerDetails.Clear();
