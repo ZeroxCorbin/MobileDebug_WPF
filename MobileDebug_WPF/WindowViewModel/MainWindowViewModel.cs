@@ -37,12 +37,20 @@ namespace MobileDebug_WPF.WindowViewModel
             }
         }
 
-        public SystemInformationViewModel SystemInformation { get; }
-        public TableOfContentsViewModel TableOfContents { get; }
-        public LogViewerViewModel LogViewer { get; }
-        public WiFiViewerViewModel WiFiViewer { get; }
-        public BatteryViewerViewModel BatteryViewer { get; }
-        public HeatMapViewModel HeatMapViewer { get; }
+        public object SelectedTab
+        {
+            get { return _SelectedTab; }
+            set { _SelectedTab = value; }
+        }
+        private object _SelectedTab;
+
+        public DragDropViewModel DragDrop { get; } = new DragDropViewModel();
+        public SystemInformationViewModel SystemInformation { get; } = new SystemInformationViewModel();
+        public TableOfContentsViewModel TableOfContents { get; }= new TableOfContentsViewModel();   
+        public LogViewerViewModel LogViewer { get; }= new LogViewerViewModel();
+        public WiFiViewerViewModel WiFiViewer { get; }=new WiFiViewerViewModel();
+        public BatteryViewerViewModel BatteryViewer { get; }=new BatteryViewerViewModel();
+        public HeatMapViewModel HeatMapViewer { get; }=new HeatMapViewModel();
 
         public ICommand OpenCommand { get; }
         private void OpenCallback(object parameter)
@@ -63,6 +71,11 @@ namespace MobileDebug_WPF.WindowViewModel
 
         private void ResetAll()
         {
+            SelectedTab = null;
+
+            DragDrop.IsVisible = true;
+            SelectedTab = DragDrop;
+
             SystemInformation.Reset();
             TableOfContents.Reset();
             LogViewer.Reset();
@@ -86,6 +99,8 @@ namespace MobileDebug_WPF.WindowViewModel
                 {
                     ResetAll();
 
+                    DragDrop.IsVisible = false;
+
                     // AddToHistory(file.FileName);
                     SystemInformation.Load();
                     TableOfContents.Load();
@@ -105,11 +120,23 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         private bool ExtractFile(string fileName)
         {
+            int i = 0;
+            while (Directory.Exists(App.WorkingDirectory))
+                try
+                {
+                    Directory.Delete(App.WorkingDirectory, true);
+                    if (i++ > 100)
+                        return false;
+
+                    Thread.Sleep(10);
+                }
+                catch(Exception)
+                {
+
+                }
+                    
             try
             {
-                if (Directory.Exists(App.WorkingDirectory))
-                    Directory.Delete(App.WorkingDirectory, true);
-
                 ZipFile.ExtractToDirectory(fileName, App.WorkingDirectory);
 
                 return true;
@@ -165,13 +192,6 @@ namespace MobileDebug_WPF.WindowViewModel
         public MainWindowViewModel(IDialogCoordinator controller)
         {
             _DialogCoordinator = controller;
-
-            SystemInformation = new SystemInformationViewModel();
-            TableOfContents = new TableOfContentsViewModel();
-            LogViewer = new LogViewerViewModel();
-            WiFiViewer = new WiFiViewerViewModel();
-            BatteryViewer = new BatteryViewerViewModel();
-            HeatMapViewer = new HeatMapViewModel();
 
             OpenCommand = new RelayCommand(OpenCallback, c => true);
         }

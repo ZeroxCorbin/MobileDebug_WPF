@@ -85,13 +85,39 @@
         </Grid>
         
         <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
-            <oxy:PlotView x:Name="DecibelPlot" Model="{Binding StatePlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <oxy:PlotView x:Name="StatePlot" Grid.Column="1" Model="{Binding StatePlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>
 
-            </oxy:PlotView>
+            <Grid Grid.Column="0" VerticalAlignment="Top">
+                <Button Grid.Row="1" Command="{Binding SaveStatePlotCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Save Baud Rate Graph.">
+                    <Button.Content>
+                        <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                    </Button.Content>
+                </Button>
+            </Grid>
         </Grid>
         
         <Grid Grid.Row="2" Grid.Column="1" >
-            <oxy:PlotView x:Name="BaudPlot" Model="{Binding VoltagePlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <oxy:PlotView x:Name="VoltagePlot" Grid.Column="1" Model="{Binding VoltagePlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>
+
+            <Grid Grid.Column="0" VerticalAlignment="Top">
+                <Button Grid.Row="1" Command="{Binding SaveVoltagePlotCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Save Baud Rate Graph.">
+                    <Button.Content>
+                        <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                    </Button.Content>
+                </Button>
+            </Grid>         
         </Grid>
 
 

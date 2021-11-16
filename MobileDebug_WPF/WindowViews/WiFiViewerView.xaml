@@ -16,7 +16,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="400"
                   Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-   
+
     <mah:MetroTabItem.HeaderTemplate>
         <ItemContainerTemplate DataType="{x:Type WindowViewModel:WiFiViewerViewModel}">
             <StackPanel Orientation="Horizontal">
@@ -36,7 +36,7 @@
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        
+
         <StackPanel Grid.Row="0" Grid.Column="0">
             <ListView ItemsSource="{Binding WiFiSSIDDetails}">
                 <ListView.ItemTemplate>
@@ -46,7 +46,7 @@
                             <Button Command="{Binding DataContext.ViewAllCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}" 
                                                 CommandParameter="{Binding}" BorderThickness="0" Margin="1" Padding="1">
 
-                                    <Label Content="{Binding}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
+                                <Label Content="{Binding}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
                             </Button>
 
                         </Grid>
@@ -54,7 +54,7 @@
                 </ListView.ItemTemplate>
             </ListView>
         </StackPanel>
-        
+
         <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="2">
             <TreeView ItemsSource="{Binding WiFiViewerDetails}" Padding="10">
                 <TreeView.ItemContainerStyle>
@@ -97,18 +97,45 @@
                 </TreeView.ItemTemplate>
             </TreeView>
         </Grid>
-        
+
         <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
-            <oxy:PlotView x:Name="DecibelPlot" Model="{Binding DecibelPlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}">
 
-            </oxy:PlotView>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <oxy:PlotView x:Name="DecibelPlot" Grid.Column="1" Model="{Binding DecibelPlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>
+
+            <Grid Grid.Column="0" VerticalAlignment="Top">
+                <Button Grid.Row="1" Command="{Binding SaveDecibelPlotCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Save Decibels Graph.">
+                    <Button.Content>
+                        <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                    </Button.Content>
+                </Button>
+            </Grid>
         </Grid>
-        
+
         <Grid Grid.Row="2" Grid.Column="1" >
-            <oxy:PlotView x:Name="BaudPlot" Model="{Binding BaudPlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <oxy:PlotView x:Name="BaudPlot" Grid.Column="1" Model="{Binding BaudPlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>
+
+            <Grid Grid.Column="0" VerticalAlignment="Top">
+                <Button Grid.Row="1" Command="{Binding SaveBaudPlotCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Save Baud Rate Graph.">
+                    <Button.Content>
+                        <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                    </Button.Content>
+                </Button>
+            </Grid>
         </Grid>
 
 
-        
+
     </Grid>
 </mah:MetroTabItem>

@@ -1,5 +1,6 @@
 ﻿using ControlzEx.Theming;
 using MahApps.Metro.Controls;
+using OxyPlot;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,14 +31,28 @@ namespace MobileDebug_WPF.WindowViews
 
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
         {
-            OxyPlot.OxyColor color;
-            if (e.NewTheme.BaseColorScheme.Equals("Dark"))
-                color = OxyPlot.OxyColor.FromRgb(255, 255, 255);
-            else
-                color = OxyPlot.OxyColor.FromRgb(0, 0, 0);
 
-            DecibelPlot.Model.TextColor = color;
-            BaudPlot.Model.TextColor = color;
+            OxyPlot.OxyColor foreColor;
+            OxyPlot.OxyColor backColor;
+
+            if (e.NewTheme.BaseColorScheme.Equals("Dark"))
+            {
+                foreColor = OxyColor.FromRgb(255, 255, 255);
+                backColor = OxyColor.FromRgb(37, 37, 37);
+            }
+
+            else
+            {
+                foreColor = OxyColor.FromRgb(0, 0, 0);
+                backColor = OxyColor.FromRgb(255, 255, 255);
+            }
+
+            StatePlot.Model.TextColor = foreColor;
+            StatePlot.Model.Background = backColor;
+
+            VoltagePlot.Model.TextColor = foreColor;
+            VoltagePlot.Model.Background = backColor;
+
         }
     }
 }

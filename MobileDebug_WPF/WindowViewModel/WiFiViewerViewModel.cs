@@ -8,6 +8,7 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
+using OxyPlot.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -47,12 +48,33 @@ namespace MobileDebug_WPF.WindowViewModel
         public PlotModel DecibelPlotModel { get => _DecibelPlotModel; private set { Set(ref _DecibelPlotModel, value); } }
         private PlotModel _DecibelPlotModel;
 
+        public ICommand SaveBaudPlotCommand { get; }
+        private void SaveBaudPlotCallback(object parameter)
+        {
+            var pngExporter = new PngExporter { Width = 4096, Height = 768 };
+
+
+            pngExporter.ExportToFile(_BaudPlotModel, Path.Join(App.WorkingDirectory, "tempBaud.png"));
+        }
+
+        public ICommand SaveDecibelPlotCommand { get; }
+        private void SaveDecibelPlotCallback(object parameter)
+        {
+            var pngExporter = new PngExporter { Width = 4096, Height = 768 };
+
+
+            pngExporter.ExportToFile(_BaudPlotModel, Path.Join(App.WorkingDirectory, "tempDecibels.png"));
+        }
+
         public WiFiViewerViewModel()
         {
             BindingOperations.EnableCollectionSynchronization(WiFiViewerDetails, WiFiViewerDetailsLock);
             BindingOperations.EnableCollectionSynchronization(WiFiSSIDDetails, WiFiSSIDDetailsLock);
 
-            ViewAllCommand = new RelayCommand(ViewAllCallback, c => true);
+            ViewAllCommand = new RelayCommand(ViewAllCallback);
+
+            SaveBaudPlotCommand = new RelayCommand(SaveBaudPlotCallback);
+            SaveDecibelPlotCommand = new RelayCommand(SaveDecibelPlotCallback);
 
             _BaudPlotModel = CreatePlotModel("Baud");
             _DecibelPlotModel = CreatePlotModel("Decibels");
@@ -63,24 +85,37 @@ namespace MobileDebug_WPF.WindowViewModel
             var plotModel = new PlotModel();
 
             var theme = ThemeManager.Current.DetectTheme();
-            OxyPlot.OxyColor color;
+
+            OxyPlot.OxyColor foreColor;
+            OxyPlot.OxyColor backColor;
+
             if (theme.BaseColorScheme.Equals("Dark"))
-                color = OxyColor.FromRgb(255, 255, 255);
+            {
+                foreColor = OxyColor.FromRgb(255, 255, 255);
+                backColor = OxyColor.FromRgb(37, 37, 37);
+            }
+
             else
-                color = OxyColor.FromRgb(0, 0, 0);
-            plotModel.TextColor = color;
+            {
+                foreColor = OxyColor.FromRgb(0, 0, 0);
+                backColor = OxyColor.FromRgb(255, 255, 255);
+            }
+
+            plotModel.TextColor = foreColor;
+            plotModel.Background = backColor;
+
             AddAxes(plotModel, name);
             return plotModel;
         }
         private static void AddAxes(PlotModel plotModel, string name)
         {
-            plotModel.Legends.Add(new OxyPlot.Legends.Legend()
-            {
-                LegendTitle = "SSID Names",
-                LegendOrientation = LegendOrientation.Vertical,
-                LegendPlacement = LegendPlacement.Outside,
-                LegendPosition = LegendPosition.LeftTop
-            });
+            //plotModel.Legends.Add(new OxyPlot.Legends.Legend()
+            //{
+            //    LegendTitle = "SSID Names",
+            //    LegendOrientation = LegendOrientation.Vertical,
+            //    LegendPlacement = LegendPlacement.Outside,
+            //    LegendPosition = LegendPosition.LeftTop
+            //});
 
             plotModel.Axes.Add(new LinearAxis
             {
@@ -192,13 +227,13 @@ namespace MobileDebug_WPF.WindowViewModel
         public Dictionary<string, List<WifiLogData>> GetAllEntries()
         {
             Dictionary<string, List<WifiLogData>> results = new Dictionary<string, List<WifiLogData>>();
-            
+
 
             foreach (var log in WiFiViewerDetails)
             {
-                foreach(var res in log.SearchResults)
+                foreach (var res in log.SearchResults)
                 {
-                    if(!results.ContainsKey(res.Key))
+                    if (!results.ContainsKey(res.Key))
                         results.Add(res.Key, res.Value);
                     else
                         results[res.Key].AddRange(res.Value);

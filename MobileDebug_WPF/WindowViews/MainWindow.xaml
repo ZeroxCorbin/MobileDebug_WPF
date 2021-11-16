@@ -76,7 +76,9 @@
         
         <WindowViews:TableOfContentsView x:Name="TableOfContentsExpander" Grid.Row="1" Grid.Column="1"/>
 
-          <mah:MetroTabControl Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
+        <mah:MetroTabControl Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" SelectedValue="{Binding SelectedTab}">
+            
+            <WindowViews:DragDropView x:Name="DragDrop" />
             
             <WindowViews:LogViewerView x:Name="LogViewer" />
             

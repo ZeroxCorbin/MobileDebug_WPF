@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace MobileDebug_WPF.WindowViewModel
@@ -42,6 +43,23 @@ namespace MobileDebug_WPF.WindowViewModel
 
 
         private MobileMap.MapFile _MapFile ;
+
+        public HeatMapViewModel()
+        {
+            SaveCommand = new Core.RelayCommand(SaveCallback);
+            EditMapCommand = new Core.RelayCommand(EditMapCallback);
+        }
+
+        public ICommand SaveCommand { get; }
+        private void SaveCallback(object parameter)
+        {
+
+        }
+        public ICommand EditMapCommand { get; }
+        private void EditMapCallback(object parameter)
+        {
+
+        }
 
         public void Load(Dictionary<string, List<WifiLogData>> wifi)
         {

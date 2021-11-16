@@ -19,17 +19,44 @@
         <ItemContainerTemplate DataType="{x:Type WindowViewModel:HeatMapViewModel}">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Heat Map"/>
+
                 <mah:ProgressRing Foreground="{DynamicResource AccentColorBrush}" Width="16" Height="16" 
                                   IsActive="{Binding RelativeSource={RelativeSource AncestorType=mah:MetroTabItem}, Path=DataContext.IsLoading}" />
             </StackPanel>
         </ItemContainerTemplate>
     </mah:MetroTabItem.HeaderTemplate>
-    
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
-        <WindowViewModel:ZoomBorder>
-            <Image Source="{Binding HeatMapImage}" />
-        </WindowViewModel:ZoomBorder>
-    </ScrollViewer>
+    <Grid>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+            <WindowViewModel:ZoomBorder>
+                <Image Source="{Binding HeatMapImage}" />
+            </WindowViewModel:ZoomBorder>
+        </ScrollViewer>
+        <Grid Panel.ZIndex="1000" HorizontalAlignment="Left" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+
+
+            <Button Grid.Row="0" Command="{Binding SaveCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                                                        Background="Transparent"
+                                                        ToolTip="Save the map image." Margin="-10,0,0,0">
+                <Button.Content>
+                    <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                </Button.Content>
+            </Button>
+            <Button Grid.Row="1" Command="{Binding EditMapCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Edit map settings.">
+                <Button.Content>
+                    <IconPacks:PicolIcons Kind="DocumentImageSettings" Width="35" Height="35"/>
+                </Button.Content>
+            </Button>
+        </Grid>
+
+    </Grid>
+
 
 
 </mah:MetroTabItem>

@@ -47,7 +47,10 @@ namespace MobileDebug_WPF
 
             InitializeComponent();
 
+
             DataContext = new WindowViewModel.MainWindowViewModel(MahApps.Metro.Controls.Dialogs.DialogCoordinator.Instance);
+
+            DragDrop.DataContext =  ((WindowViewModel.MainWindowViewModel)DataContext).DragDrop;
             SystemInformationExpander.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).SystemInformation;
             TableOfContentsExpander.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).TableOfContents;
             LogViewer.DataContext = ((WindowViewModel.MainWindowViewModel)DataContext).LogViewer;

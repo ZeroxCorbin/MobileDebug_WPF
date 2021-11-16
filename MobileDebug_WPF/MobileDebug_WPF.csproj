@@ -40,6 +40,9 @@
     <Compile Update="WindowViews\HeatMapView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="WindowViews\DragDropView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WindowViews\WiFiViewerView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -78,6 +81,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="WindowViews\HeatMapView.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="WindowViews\DragDropView.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>

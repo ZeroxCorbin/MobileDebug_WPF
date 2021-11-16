@@ -8,6 +8,7 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
+using OxyPlot.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -45,11 +46,33 @@ namespace MobileDebug_WPF.WindowViewModel
         public PlotModel VoltagePlotModel { get => _VoltagePlotModel; private set { Set(ref _VoltagePlotModel, value); } }
         private PlotModel _VoltagePlotModel;
 
+        public ICommand SaveStatePlotCommand { get; }
+        private void SaveStatePlotCallback(object parameter)
+        {
+            var pngExporter = new PngExporter { Width = 4096, Height = 768 };
+
+
+            pngExporter.ExportToFile(_StatePlotModel, Path.Join(App.WorkingDirectory, "tempState.png"));
+        }
+
+        public ICommand SaveVoltagePlotCommand { get; }
+        private void SaveVoltagePlotCallback(object parameter)
+        {
+            var pngExporter = new PngExporter { Width = 4096, Height = 768 };
+
+
+            pngExporter.ExportToFile(_VoltagePlotModel, Path.Join(App.WorkingDirectory, "tempVoltage.png"));
+        }
+
         public BatteryViewerViewModel()
         {
             BindingOperations.EnableCollectionSynchronization(BatteryViewerDetails, BatteryViewerDetailsLock);
 
-            ViewAllCommand = new RelayCommand(ViewAllCallback, c => true);
+            ViewAllCommand = new RelayCommand(ViewAllCallback);
+
+            SaveStatePlotCommand = new RelayCommand(SaveStatePlotCallback);
+            SaveVoltagePlotCommand = new RelayCommand(SaveVoltagePlotCallback);
+
 
             _StatePlotModel = CreatePlotModel("State of Charge (%)");
             _VoltagePlotModel = CreatePlotModel("Voltage");
@@ -59,13 +82,27 @@ namespace MobileDebug_WPF.WindowViewModel
         {
             var plotModel = new PlotModel();
 
+
             var theme = ThemeManager.Current.DetectTheme();
-            OxyPlot.OxyColor color;
+
+            OxyPlot.OxyColor foreColor;
+            OxyPlot.OxyColor backColor;
+
             if (theme.BaseColorScheme.Equals("Dark"))
-                color = OxyColor.FromRgb(255, 255, 255);
+            {
+                foreColor = OxyColor.FromRgb(255, 255, 255);
+                backColor = OxyColor.FromRgb(37, 37, 37);
+            }
+
             else
-                color = OxyColor.FromRgb(0, 0, 0);
-            plotModel.TextColor = color;
+            {
+                foreColor = OxyColor.FromRgb(0, 0, 0);
+                backColor = OxyColor.FromRgb(255, 255, 255);
+            }
+
+            plotModel.TextColor = foreColor;
+            plotModel.Background = backColor;
+
             AddAxes(plotModel, name);
             return plotModel;
         }
