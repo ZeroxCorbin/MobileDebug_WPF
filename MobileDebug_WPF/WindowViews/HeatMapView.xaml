@@ -36,23 +36,50 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
 
-            <Button Grid.Row="0" Command="{Binding SaveCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
-                                                        Background="Transparent"
-                                                        ToolTip="Save the map image." Margin="-10,0,0,0">
+            <Button Grid.Row="0"
+                    Command="{Binding SaveCommand}" 
+                    CommandParameter="Save"
+                    Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                    Background="Transparent"
+                    ToolTip="Save the map image.">
                 <Button.Content>
-                    <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                    <IconPacks:MaterialLight Kind="ContentSave" Width="35" Height="35"/>
                 </Button.Content>
             </Button>
-            <Button Grid.Row="1" Command="{Binding EditMapCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
-                                                        Background="Transparent"
-                                                        ToolTip="Edit map settings.">
+            <Button Grid.Row="1" 
+                    Command="{Binding SaveCommand}" 
+                    CommandParameter="Copy"
+                    Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                    Background="Transparent"
+                    ToolTip="Copy the map image to the clipboard.">
                 <Button.Content>
-                    <IconPacks:PicolIcons Kind="DocumentImageSettings" Width="35" Height="35"/>
+                    <IconPacks:MaterialDesign Kind="ContentCopy" Width="35" Height="35"/>
                 </Button.Content>
             </Button>
+            <!--<Button Grid.Row="2" 
+                    Command="{Binding EditMapCommand}" 
+                    Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                    Background="Transparent"
+                    ToolTip="Edit map settings.">
+                <Button.Content>
+                    <IconPacks:Ionicons Kind="SettingsMD" Width="35" Height="35"/>
+                </Button.Content>
+            </Button>-->
+            <!--<Button Grid.Row="3" 
+                    Command="{Binding SaveCommand}" 
+                    CommandParameter="Copy"
+                    Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                    Background="Transparent"
+                    ToolTip="Copy the map image to the clipboard.">
+                <Button.Content>
+                    <IconPacks:Material Kind="FileCad" Width="35" Height="35"/>
+                </Button.Content>
+            </Button>-->
         </Grid>
 
     </Grid>

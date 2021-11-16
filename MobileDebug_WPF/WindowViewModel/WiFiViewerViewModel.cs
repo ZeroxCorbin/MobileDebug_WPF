@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -53,8 +54,19 @@ namespace MobileDebug_WPF.WindowViewModel
         {
             var pngExporter = new PngExporter { Width = 4096, Height = 768 };
 
+            if(((string)parameter) == "Save")
+            {
+                string file = null;
+                if (App.SaveFile(ref file, "PNG file (*.png)|*.png", "WiFiBaud.png", true, false, true))
+                {
+                    pngExporter.ExportToFile(_BaudPlotModel, file);
+                }
+                return;
+            }
 
-            pngExporter.ExportToFile(_BaudPlotModel, Path.Join(App.WorkingDirectory, "tempBaud.png"));
+            var bitmap = pngExporter.ExportToBitmap(_BaudPlotModel);
+            Clipboard.SetImage(bitmap);
+
         }
 
         public ICommand SaveDecibelPlotCommand { get; }
@@ -62,8 +74,18 @@ namespace MobileDebug_WPF.WindowViewModel
         {
             var pngExporter = new PngExporter { Width = 4096, Height = 768 };
 
+            if (((string)parameter) == "Save")
+            {
+                string file = null;
+                if (App.SaveFile(ref file, "PNG file (*.png)|*.png", "WiFiDecibels.png", true, false, true))
+                {
+                    pngExporter.ExportToFile(_DecibelPlotModel, file);
+                }
+                return;
+            }
 
-            pngExporter.ExportToFile(_BaudPlotModel, Path.Join(App.WorkingDirectory, "tempDecibels.png"));
+            var bitmap = pngExporter.ExportToBitmap(_DecibelPlotModel);
+            Clipboard.SetImage(bitmap);
         }
 
         public WiFiViewerViewModel()

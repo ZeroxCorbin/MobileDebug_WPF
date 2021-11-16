@@ -53,6 +53,22 @@ namespace MobileDebug_WPF.WindowViewModel
         public ICommand SaveCommand { get; }
         private void SaveCallback(object parameter)
         {
+            if (((string)parameter) == "Save")
+            {
+                string file = null;
+                if (App.SaveFile(ref file, "PNG file (*.png)|*.png", _MapFile.FileName + ".png", true, false, true))
+                {
+                    using var fileStream = File.Create(file);
+                    PngBitmapEncoder encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(HeatMapImage));
+                    encoder.Save(fileStream);
+
+                    fileStream.Close();
+                }
+                return;
+            }
+
+            Clipboard.SetImage(HeatMapImage);
 
         }
         public ICommand EditMapCommand { get; }

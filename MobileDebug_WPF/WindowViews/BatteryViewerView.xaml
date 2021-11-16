@@ -92,11 +92,28 @@
             <oxy:PlotView x:Name="StatePlot" Grid.Column="1" Model="{Binding StatePlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>
 
             <Grid Grid.Column="0" VerticalAlignment="Top">
-                <Button Grid.Row="1" Command="{Binding SaveStatePlotCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0"
+                        Command="{Binding SaveStatePlotCommand}"
+                        CommandParameter="Save"
+                        Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
                                                         Background="Transparent"
-                                                        ToolTip="Save Baud Rate Graph.">
+                                                        ToolTip="Save Battery State Graph.">
                     <Button.Content>
-                        <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                        <IconPacks:MaterialLight Kind="ContentSave" Width="35" Height="35"/>
+                    </Button.Content>
+                </Button>
+                <Button Grid.Row="1" 
+                        Command="{Binding SaveStatePlotCommand}" 
+                        CommandParameter="Copy"
+                        Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Copy Battery State Graph to clipboard as image.">
+                    <Button.Content>
+                        <IconPacks:MaterialDesign Kind="ContentCopy" Width="35" Height="35"/>
                     </Button.Content>
                 </Button>
             </Grid>
@@ -110,11 +127,28 @@
             <oxy:PlotView x:Name="VoltagePlot" Grid.Column="1" Model="{Binding VoltagePlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>
 
             <Grid Grid.Column="0" VerticalAlignment="Top">
-                <Button Grid.Row="1" Command="{Binding SaveVoltagePlotCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0"
+                        Command="{Binding SaveVoltagePlotCommand}"
+                        CommandParameter="Save"
+                        Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
                                                         Background="Transparent"
-                                                        ToolTip="Save Baud Rate Graph.">
+                                                        ToolTip="Save Battery Voltage Graph.">
                     <Button.Content>
-                        <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                        <IconPacks:MaterialLight Kind="ContentSave" Width="35" Height="35"/>
+                    </Button.Content>
+                </Button>
+                <Button Grid.Row="1" 
+                        Command="{Binding SaveVoltagePlotCommand}" 
+                        CommandParameter="Copy"
+                        Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Copy Battery Voltage Graph to clipboard as image.">
+                    <Button.Content>
+                        <IconPacks:MaterialDesign Kind="ContentCopy" Width="35" Height="35"/>
                     </Button.Content>
                 </Button>
             </Grid>         

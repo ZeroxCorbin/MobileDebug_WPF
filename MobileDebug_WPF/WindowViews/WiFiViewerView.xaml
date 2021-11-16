@@ -107,11 +107,28 @@
             <oxy:PlotView x:Name="DecibelPlot" Grid.Column="1" Model="{Binding DecibelPlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>
 
             <Grid Grid.Column="0" VerticalAlignment="Top">
-                <Button Grid.Row="1" Command="{Binding SaveDecibelPlotCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0"
+                        Command="{Binding SaveDecibelPlotCommand}"
+                        CommandParameter="Save"
+                        Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
                                                         Background="Transparent"
                                                         ToolTip="Save Decibels Graph.">
                     <Button.Content>
-                        <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                        <IconPacks:MaterialLight Kind="ContentSave" Width="35" Height="35"/>
+                    </Button.Content>
+                </Button>
+                <Button Grid.Row="1" 
+                        Command="{Binding SaveDecibelPlotCommand}" 
+                        CommandParameter="Copy"
+                        Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Copy Decibels Graph to clipboard as image.">
+                    <Button.Content>
+                        <IconPacks:MaterialDesign Kind="ContentCopy" Width="35" Height="35"/>
                     </Button.Content>
                 </Button>
             </Grid>
@@ -125,11 +142,28 @@
             <oxy:PlotView x:Name="BaudPlot" Grid.Column="1" Model="{Binding BaudPlotModel}" Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Foreground="{DynamicResource MahApps.Brushes.Text}"/>
 
             <Grid Grid.Column="0" VerticalAlignment="Top">
-                <Button Grid.Row="1" Command="{Binding SaveBaudPlotCommand}" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0"
+                        Command="{Binding SaveBaudPlotCommand}"
+                        CommandParameter="Save"
+                        Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
                                                         Background="Transparent"
-                                                        ToolTip="Save Baud Rate Graph.">
+                                                        ToolTip="Save Baud Graph.">
                     <Button.Content>
-                        <IconPacks:PicolIcons Kind="DocumentImage" Width="35" Height="35"/>
+                        <IconPacks:MaterialLight Kind="ContentSave" Width="35" Height="35"/>
+                    </Button.Content>
+                </Button>
+                <Button Grid.Row="1" 
+                        Command="{Binding SaveBaudPlotCommand}" 
+                        CommandParameter="Copy"
+                        Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" 
+                                                        Background="Transparent"
+                                                        ToolTip="Copy Baud Graph to clipboard as image.">
+                    <Button.Content>
+                        <IconPacks:MaterialDesign Kind="ContentCopy" Width="35" Height="35"/>
                     </Button.Content>
                 </Button>
             </Grid>

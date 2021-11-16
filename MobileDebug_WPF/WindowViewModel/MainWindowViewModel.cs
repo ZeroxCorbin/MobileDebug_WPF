@@ -85,17 +85,10 @@ namespace MobileDebug_WPF.WindowViewModel
         }
         private void OpenZipFile()
         {
-            Microsoft.Win32.OpenFileDialog file = new Microsoft.Win32.OpenFileDialog
+            string file = null;
+            if (App.OpenFile(ref file, "Zip file (*.zip)|*.zip"))
             {
-                CheckFileExists = true,
-                CheckPathExists = true,
-                Filter = "Zip file (*.zip)|*.zip",
-                FilterIndex = 1
-            };
-
-            if ((bool)file.ShowDialog())
-            {
-                if (ExtractFile(file.FileName))
+                if (ExtractFile(file))
                 {
                     ResetAll();
 

@@ -74,7 +74,7 @@ namespace MobileDebug_WPF
             Settings.Dispose();
         }
 
-        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
         {
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
@@ -108,6 +108,46 @@ namespace MobileDebug_WPF
                     DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
                 }
             }
+        }
+        public static bool OpenFile(ref string file, string filter, string name = null, bool checkPath = true, bool checkFile = true, bool addExtension = false)
+        {
+            Microsoft.Win32.OpenFileDialog fileDiag = new Microsoft.Win32.OpenFileDialog
+            {
+                CheckFileExists = checkFile,
+                CheckPathExists = checkPath,
+                AddExtension = addExtension,
+                FileName = name,
+                Filter = filter,
+                FilterIndex = 1
+            };
+
+            if ((bool)fileDiag.ShowDialog())
+            {
+                file = fileDiag.FileName;
+                return true;
+            }
+            else 
+                return false;
+        }
+        public static bool SaveFile(ref string file, string filter, string name = null, bool checkPath = true, bool checkFile = true, bool addExtension = false)
+        {
+            Microsoft.Win32.SaveFileDialog fileDiag = new Microsoft.Win32.SaveFileDialog
+            {
+                CheckFileExists = checkFile,
+                CheckPathExists = checkPath,
+                AddExtension = addExtension,
+                FileName = name,
+                Filter = filter,
+                FilterIndex = 1
+            };
+
+            if ((bool)fileDiag.ShowDialog())
+            {
+                file = fileDiag.FileName;
+                return true;
+            }
+            else
+                return false;
         }
     }
 }

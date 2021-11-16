@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -49,19 +50,39 @@ namespace MobileDebug_WPF.WindowViewModel
         public ICommand SaveStatePlotCommand { get; }
         private void SaveStatePlotCallback(object parameter)
         {
-            var pngExporter = new PngExporter { Width = 4096, Height = 768 };
+            var pngExporter = new PngExporter { Width = 2048, Height = 768 };
 
+            if (((string)parameter) == "Save")
+            {
+                string file = null;
+                if (App.SaveFile(ref file, "PNG file (*.png)|*.png", "BatteryStateGraph.png", true, false, true))
+                {
+                    pngExporter.ExportToFile(_StatePlotModel, file);
+                }
+                return;
+            }
 
-            pngExporter.ExportToFile(_StatePlotModel, Path.Join(App.WorkingDirectory, "tempState.png"));
+            var bitmap = pngExporter.ExportToBitmap(_StatePlotModel);
+            Clipboard.SetImage(bitmap);
         }
 
         public ICommand SaveVoltagePlotCommand { get; }
         private void SaveVoltagePlotCallback(object parameter)
         {
-            var pngExporter = new PngExporter { Width = 4096, Height = 768 };
+            var pngExporter = new PngExporter { Width = 2048, Height = 768 };
 
+            if (((string)parameter) == "Save")
+            {
+                string file = null;
+                if (App.SaveFile(ref file, "PNG file (*.png)|*.png", "BatteryVoltageGraph.png", true, false, true))
+                {
+                    pngExporter.ExportToFile(_VoltagePlotModel, file);
+                }
+                return;
+            }
 
-            pngExporter.ExportToFile(_VoltagePlotModel, Path.Join(App.WorkingDirectory, "tempVoltage.png"));
+            var bitmap = pngExporter.ExportToBitmap(_VoltagePlotModel);
+            Clipboard.SetImage(bitmap);
         }
 
         public BatteryViewerViewModel()
