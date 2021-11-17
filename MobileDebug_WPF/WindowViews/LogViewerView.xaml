@@ -129,18 +129,13 @@
                             <Label Content="{Binding DateTime}"/>
                         </TextBlock>
 
-                        <HierarchicalDataTemplate.ItemTemplate >
+                        <HierarchicalDataTemplate.ItemTemplate>
                             <DataTemplate>
- 
+
+                                <mah:Badged Badge="{Binding Value.Count}" Margin="0,0,18,0">
                                     <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TreeViewItem}, AncestorLevel=2}, Path=DataContext.ViewCommand}" 
-                                                CommandParameter="{Binding}" BorderThickness="0" Margin="1" Padding="1">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Label Content="{Binding Key}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
-                                            <Label Content="{Binding Value.Count}" HorizontalAlignment="Right" Foreground="{StaticResource MahApps.Brushes.ThemeBackground}"/>
-                                        </StackPanel>
-
-                                    </Button>
-
+                                                CommandParameter="{Binding}" Content="{Binding Key}" Margin="1"/>
+                                </mah:Badged>
 
                             </DataTemplate>
                         </HierarchicalDataTemplate.ItemTemplate>

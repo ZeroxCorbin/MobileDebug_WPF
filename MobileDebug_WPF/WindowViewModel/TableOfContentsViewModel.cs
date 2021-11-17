@@ -15,10 +15,10 @@ namespace MobileDebug_WPF.WindowViewModel
 
         public bool IsExpanded
         {
-            get => App.Settings.GetValue("ExpanderSystemInfo", false);
+            get => App.Settings.GetValue("ExpanderTableOfContents", false);
             set
             {
-                App.Settings.SetValue("ExpanderSystemInfo", value);
+                App.Settings.SetValue("ExpanderTableOfContents", value);
                 OnPropertyChanged();
             }
         }

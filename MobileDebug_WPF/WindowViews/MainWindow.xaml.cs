@@ -41,12 +41,9 @@ namespace MobileDebug_WPF
     {
         public MainWindow()
         {
-            //ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
-            ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
-            ThemeManager.Current.SyncTheme();
+            //ThemeManager.Current.SyncTheme();
 
             InitializeComponent();
-
 
             DataContext = new WindowViewModel.MainWindowViewModel(MahApps.Metro.Controls.Dialogs.DialogCoordinator.Instance);
 
@@ -61,7 +58,7 @@ namespace MobileDebug_WPF
             _ = SetBinding(WidthProperty, new Binding("Width") { Source = DataContext, Mode = BindingMode.TwoWay });
             _ = SetBinding(HeightProperty, new Binding("Height") { Source = DataContext, Mode = BindingMode.TwoWay });
 
-            //WindowStartupLocation = WindowStartupLocation.Manual;
+            
 
             //WindowSettings = App.Settings.GetValue("WindowSettings", new SimpleDataBase.WindowSettings());
 

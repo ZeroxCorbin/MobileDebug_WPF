@@ -19,7 +19,7 @@ namespace MobileDebug_WPF.WindowViewModel
 {
     public class MainWindowViewModel : Core.ViewModelBase
     {
-        public string Title => "Main Window";
+        public string Title => "Mobile Debug (Beta)";
         public double Left { get => App.Settings.GetValue("MainWindowView.Left", 0.0); set { if (WindowState == WindowState.Normal) { App.Settings.SetValue("MainWindowView.Left", value); OnPropertyChanged(); } } }
         public double Top { get => App.Settings.GetValue("MainWindowView.Top", 0.0); set { if (WindowState == WindowState.Normal) { App.Settings.SetValue("MainWindowView.Top", value); OnPropertyChanged(); } } }
         public double Width { get => App.Settings.GetValue("MainWindowView.Width", 1024.0); set { if (WindowState == WindowState.Normal) { App.Settings.SetValue("MainWindowView.Width", value); OnPropertyChanged(); } } }

@@ -54,24 +54,20 @@ namespace MobileDebug_WPF
             }
         }
 
+        public string GetValue(string key, string defaultValue = "")
+        {
+            SimpleSetting settings = SelectSetting(key);
+            return string.IsNullOrEmpty(settings.Value) ? defaultValue : settings.Value;
+        }
         public T GetValue<T>(string key)
         {
             SimpleSetting settings = SelectSetting(key);
-            if (settings.Value == string.Empty) return default;
-            return (T)Newtonsoft.Json.JsonConvert.DeserializeObject(settings.Value, typeof(T));
+            return settings.Value == string.Empty ? default : (T)Newtonsoft.Json.JsonConvert.DeserializeObject(settings.Value, typeof(T));
         }
         public T GetValue<T>(string key, T defaultValue)
         {
             SimpleSetting settings = SelectSetting(key);
-            if (settings.Value == string.Empty)
-                return defaultValue;
-            return (T)Newtonsoft.Json.JsonConvert.DeserializeObject(settings.Value, typeof(T));
-        }
-        public string GetValue(string key)
-        {
-            SimpleSetting settings = SelectSetting(key);
-            if (settings.Value == string.Empty) return string.Empty;
-            return settings.Value;
+            return settings.Value == string.Empty ? defaultValue : (T)Newtonsoft.Json.JsonConvert.DeserializeObject(settings.Value, typeof(T));
         }
 
         public void SetValue<T>(string key, T value)

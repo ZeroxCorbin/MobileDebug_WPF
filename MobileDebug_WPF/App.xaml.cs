@@ -56,9 +56,18 @@ namespace MobileDebug_WPF
             {
                 Console.WriteLine("Application settings loaded.");
             }
-            
-            ThemeManager.Current.ChangeTheme(this, Settings.GetValue("App.Theme", "Light.Steel"));
+
+            _ = ThemeManager.Current.ChangeTheme(this, Settings.GetValue("App.Theme", "Light.Steel"));
+
+            ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
+            ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
         }
+
+        private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
+        {
+            Settings.SetValue("App.Theme", e.NewTheme.Name);
+        }
+
         public App()
         {
             //GetCommandData cmd = new GetCommandData();

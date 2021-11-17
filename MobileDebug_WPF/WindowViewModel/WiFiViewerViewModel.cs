@@ -214,7 +214,7 @@ namespace MobileDebug_WPF.WindowViewModel
         private void OpenCallback(object parameter)
         {
             var p = new System.Diagnostics.Process();
-            p.StartInfo = new System.Diagnostics.ProcessStartInfo(((LogViewerEntry)parameter).Path)
+            p.StartInfo = new System.Diagnostics.ProcessStartInfo(((WiFiViewerEntry)parameter).Path)
             {
                 UseShellExecute = true
             };
